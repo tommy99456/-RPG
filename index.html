@@ -94,6 +94,29 @@
           </svg>
         );
 
+        // 寶物圖示
+        const PixelTreasureMagnet = () => (
+            <PixelSvg>
+                <path d="M4 8 L4 16 A 8 8 0 0 0 20 16 L 20 8 L 16 8 L 16 16 A 4 4 0 0 1 8 16 L 8 8 Z" fill="#06b6d4" />
+                <rect x="4" y="4" width="4" height="4" fill="#cbd5e1" />
+                <rect x="16" y="4" width="4" height="4" fill="#cbd5e1" />
+            </PixelSvg>
+        );
+
+        const PixelTreasureFire = () => (
+            <PixelSvg>
+                <path d="M12 2 Q18 8 18 14 A 6 6 0 1 1 6 14 Q 6 8 12 2 Z" fill="#ea580c" />
+                <circle cx="12" cy="15" r="3" fill="#fbbf24" className="animate-pulse" />
+            </PixelSvg>
+        );
+
+        const PixelTreasureLight = () => (
+            <PixelSvg>
+                <polygon points="12,2 15,8 21,9 17,14 18,20 12,17 6,20 7,14 3,9 9,8" fill="#facc15" stroke="#ca8a04" strokeWidth="1" />
+                <circle cx="12" cy="11" r="3" fill="#ffedd5" className="animate-ping" opacity="0.5" />
+            </PixelSvg>
+        );
+
         const AvatarEngineer = () => (
           <PixelSvg>
             <rect x="7" y="4" width="10" height="9" fill="#fca5a5" />
@@ -247,27 +270,46 @@
           }
         ];
 
+        // 使用新的 Pixel SVG 作為寶物圖示
         const TREASURES = [
-          { type: 'Magnetic', name: '超導線圈組件', desc: '蘊含強大磁場潛力的精密線圈。', icon: <Magnet size={64} className="text-cyan-400" /> },
-          { type: 'Thermal', name: '高阻發熱核心', desc: '能瞬間產生極高溫度的核心材料。', icon: <Flame size={64} className="text-orange-400" /> },
-          { type: 'Luminous', name: '光子聚合晶體', desc: '能夠將電能高效率轉化為純淨光束。', icon: <Lightbulb size={64} className="text-yellow-400" /> }
+          { type: 'Magnetic', name: '超導線圈組件', desc: '蘊含強大磁場潛力的精密線圈。', icon: <PixelTreasureMagnet /> },
+          { type: 'Thermal', name: '高阻發熱核心', desc: '能瞬間產生極高溫度的核心材料。', icon: <PixelTreasureFire /> },
+          { type: 'Luminous', name: '光子聚合晶體', desc: '能夠將電能高效率轉化為純淨光束。', icon: <PixelTreasureLight /> }
         ];
 
+        // --- 題庫 (擴充至 30 題) ---
         const MASTER_QUESTION_POOL = [
-          { id: 1, q: "電飯煲主要利用電流的什麼效應來煮飯？", options: [{ text: "熱效應", correct: true }, { text: "磁效應", correct: false }, { text: "光效應", correct: false }], reason: "電飯煲內的發熱線會產生熱能煮食。", hint: "分析：電飯煲的目的是「煮熟」食物，這需要高溫。請思考哪種效應能產生熱量。" },
-          { id: 2, q: "廢鐵處理場的起重機利用什麼來吸起廢鐵？", options: [{ text: "巨大的磁石", correct: false }, { text: "電磁鐵", correct: true }, { text: "吸塵機", correct: false }], reason: "電磁鐵通電有磁，斷電無磁，方便控制。", hint: "分析：起重機需要「吸起」也要能隨時「放下」廢鐵。永久磁鐵無法關閉磁力。" },
-          { id: 3, q: "以下哪種電器同時應用了「熱效應」和「磁效應」？", options: [{ text: "LED 燈", correct: false }, { text: "電暖爐", correct: false }, { text: "風筒 (吹風機)", correct: true }], reason: "風筒有發熱線產生熱，也有馬達產生風。", hint: "分析：這個電器既要能吹出風（需要馬達轉動），又要能吹出暖氣（需要發熱）。" },
-          { id: 4, q: "增加電磁鐵線圈的圈數，磁力會怎樣？", options: [{ text: "變強", correct: true }, { text: "變弱", correct: false }, { text: "不變", correct: false }], reason: "線圈越密，磁場越強。", hint: "數據庫檢索：電磁鐵的磁力與電流大小及線圈密度成正比。" },
-          { id: 5, q: "為什麼我們不應該用濕手觸摸電掣？", options: [{ text: "會弄髒電掣", correct: false }, { text: "自來水是電導體，容易觸電", correct: true }, { text: "開關會失靈", correct: false }], reason: "一般的水含有雜質，是可以導電的。", hint: "安全警告：自來水並非純水，水中含有礦物質，使其成為導體。" },
-          { id: 6, q: "以下哪種物料是絕緣體（Insulator）？", options: [{ text: "銅線", correct: false }, { text: "鐵釘", correct: false }, { text: "橡膠手套", correct: true }], reason: "橡膠不易讓電流通過，常用作保護層。", hint: "分析：我們需要找出一種「不容易」讓電通過的材料，常用於包裹電線。" },
-          { id: 7, q: "電熨斗（燙斗）運作時，是將電能轉換成什麼？", options: [{ text: "聲能", correct: false }, { text: "熱能", correct: true }, { text: "動能", correct: false }], reason: "電熨斗利用發熱板產生高溫。", hint: "觀察：使用電熨斗時，底板會變得非常燙，這是為了撫平衣物。" },
-          { id: 8, q: "電磁鐵相對於永久磁鐵的一個主要優點是什麼？", options: [{ text: "磁力永遠不變", correct: false }, { text: "可以控制磁力的開關", correct: true }, { text: "比較輕", correct: false }], reason: "通電有磁，斷電無磁是其最大特性。", hint: "比較：永久磁鐵的磁力一直存在，但電磁鐵可以透過切斷電源來消除磁力。" },
+          { id: 1, q: "電飯煲主要利用電流的什麼效應來煮飯？", options: [{ text: "熱效應", correct: true }, { text: "磁效應", correct: false }, { text: "光效應", correct: false }], reason: "電飯煲內的發熱線會產生熱能煮食。", hint: "分析：電飯煲的目的是「煮熟」食物，這需要高溫。" },
+          { id: 2, q: "廢鐵處理場的起重機利用什麼來吸起廢鐵？", options: [{ text: "巨大的磁石", correct: false }, { text: "電磁鐵", correct: true }, { text: "吸塵機", correct: false }], reason: "電磁鐵通電有磁，斷電無磁，方便控制。", hint: "分析：起重機需要「吸起」也要能隨時「放下」廢鐵。" },
+          { id: 3, q: "以下哪種電器同時應用了「熱效應」和「磁效應」？", options: [{ text: "LED 燈", correct: false }, { text: "電暖爐", correct: false }, { text: "風筒 (吹風機)", correct: true }], reason: "風筒有發熱線產生熱，也有馬達產生風。", hint: "分析：這個電器既要能吹出風（馬達），又要能吹出暖氣（發熱）。" },
+          { id: 4, q: "增加電磁鐵線圈的圈數，磁力會怎樣？", options: [{ text: "變強", correct: true }, { text: "變弱", correct: false }, { text: "不變", correct: false }], reason: "線圈越密，磁場越強。", hint: "數據庫檢索：電磁鐵的磁力與線圈密度成正比。" },
+          { id: 5, q: "為什麼我們不應該用濕手觸摸電掣？", options: [{ text: "會弄髒電掣", correct: false }, { text: "自來水是電導體，容易觸電", correct: true }, { text: "開關會失靈", correct: false }], reason: "一般的水含有雜質，是可以導電的。", hint: "安全警告：自來水並非絕緣體。" },
+          { id: 6, q: "以下哪種物料是絕緣體（Insulator）？", options: [{ text: "銅線", correct: false }, { text: "鐵釘", correct: false }, { text: "橡膠手套", correct: true }], reason: "橡膠不易讓電流通過，常用作保護層。", hint: "分析：我們需要找出一種「不容易」讓電通過的材料。" },
+          { id: 7, q: "電熨斗（燙斗）運作時，是將電能轉換成什麼？", options: [{ text: "聲能", correct: false }, { text: "熱能", correct: true }, { text: "動能", correct: false }], reason: "電熨斗利用發熱板產生高溫。", hint: "觀察：使用電熨斗時，底板會變得非常燙。" },
+          { id: 8, q: "電磁鐵相對於永久磁鐵的一個主要優點是什麼？", options: [{ text: "磁力永遠不變", correct: false }, { text: "可以控制磁力的開關", correct: true }, { text: "比較輕", correct: false }], reason: "通電有磁，斷電無磁是其最大特性。", hint: "比較：電磁鐵可以透過切斷電源來消除磁力。" },
           { id: 9, q: "購買電器時，能源標籤上的一級代表什麼？", options: [{ text: "最慳電（能源效益最高）", correct: true }, { text: "最耗電", correct: false }, { text: "價格最貴", correct: false }], reason: "1級最慳電，5級最耗電。", hint: "環保數據：綠色的一級標籤代表能源效益最高。" },
           { id: 10, q: "電風扇轉動時，主要將電能轉換成什麼？", options: [{ text: "光能", correct: false }, { text: "動能", correct: true }, { text: "化學能", correct: false }], reason: "馬達轉動扇葉，產生動能。", hint: "物理分析：扇葉在「移動」和「旋轉」，這屬於機械運動。" },
-          { id: 11, q: "如果電線的絕緣外層破損了，應該怎麼做？", options: [{ text: "用膠紙黏好繼續用", correct: false }, { text: "立即停止使用並更換", correct: true }, { text: "小心避開破損處即可", correct: false }], reason: "破損電線極易引致漏電或火災。", hint: "安全協議：破損的絕緣層會導致漏電風險，必須立即採取最安全的措施。" },
-          { id: 12, q: "以下哪個是能夠導電的非金屬？", options: [{ text: "木頭", correct: false }, { text: "石墨 (鉛筆芯)", correct: true }, { text: "玻璃", correct: false }], reason: "石墨是少數能導電的非金屬。", hint: "特例分析：雖然大多數非金屬是絕緣體，但鉛筆芯的主要成分是碳的一種形式，可以導電。" },
-          { id: 13, q: "電鈴 (Electric Bell) 能夠發聲，是因為裡面有什麼裝置？", options: [{ text: "電磁鐵", correct: true }, { text: "發熱線", correct: false }, { text: "LED 燈", correct: false }], reason: "電磁鐵吸引小鎚敲擊鈴蓋。", hint: "構造分析：電鈴需要一個裝置來快速吸引和釋放小鎚子去敲擊鈴聲。" },
-          { id: 14, q: "要想增強電磁鐵的磁力，除了增加線圈，還可以？", options: [{ text: "減少電池數量", correct: false }, { text: "增加串聯電池數量", correct: true }, { text: "將鐵芯換成木棒", correct: false }], reason: "增加電池（串聯）可增加電流，增強磁力。", hint: "能量公式：磁力與電流大小有關。串聯更多電池可以提供更大的電壓和電流。" }
+          { id: 11, q: "如果電線的絕緣外層破損了，應該怎麼做？", options: [{ text: "用膠紙黏好繼續用", correct: false }, { text: "立即停止使用並更換", correct: true }, { text: "小心避開破損處即可", correct: false }], reason: "破損電線極易引致漏電或火災。", hint: "安全協議：破損的絕緣層會導致漏電風險。" },
+          { id: 12, q: "以下哪個是能夠導電的非金屬？", options: [{ text: "木頭", correct: false }, { text: "石墨 (鉛筆芯)", correct: true }, { text: "玻璃", correct: false }], reason: "石墨是少數能導電的非金屬。", hint: "特例分析：鉛筆芯的主要成分是碳。" },
+          { id: 13, q: "電鈴 (Electric Bell) 能夠發聲，是因為裡面有什麼裝置？", options: [{ text: "電磁鐵", correct: true }, { text: "發熱線", correct: false }, { text: "LED 燈", correct: false }], reason: "電磁鐵吸引小鎚敲擊鈴蓋。", hint: "構造分析：電鈴需要一個裝置來快速吸引和釋放小鎚子。" },
+          { id: 14, q: "要想增強電磁鐵的磁力，除了增加線圈，還可以？", options: [{ text: "減少電池數量", correct: false }, { text: "增加串聯電池數量", correct: true }, { text: "將鐵芯換成木棒", correct: false }], reason: "增加電池（串聯）可增加電流，增強磁力。", hint: "能量公式：磁力與電流大小有關。" },
+          { id: 15, q: "LED 燈比傳統鎢絲燈泡優勝的地方是？", options: [{ text: "更慳電、壽命更長", correct: true }, { text: "會產生更多熱能", correct: false }, { text: "價格一定最便宜", correct: false }], reason: "LED 能量轉換效率高，較少浪費在熱能。", hint: "比較：現代家庭多使用 LED 燈是因為它更環保。" },
+          { id: 16, q: "電池上面標示的 '+' 號代表什麼？", options: [{ text: "正極 (Positive)", correct: true }, { text: "負極 (Negative)", correct: false }, { text: "中性", correct: false }], reason: "電池有正極(+)和負極(-)。", hint: "基礎知識：+ 代表正，- 代表負。" },
+          { id: 17, q: "如果改變連接電磁鐵的電池正負極方向，會發生什麼？", options: [{ text: "磁力消失", correct: false }, { text: "磁極 (N/S) 會倒轉", correct: true }, { text: "電池會爆炸", correct: false }], reason: "電流方向改變，磁場方向也會改變。", hint: "物理定律：電流方向決定磁場方向。" },
+          { id: 18, q: "什麼裝置可以保護電路，在電流過大時自動切斷電源？", options: [{ text: "保險絲 (Fuse) / 斷路器", correct: true }, { text: "電線", correct: false }, { text: "插座", correct: false }], reason: "防止過載引起火災。", hint: "安全裝置：家裡的電箱裡都有這個東西。" },
+          { id: 19, q: "磁浮列車利用什麼原理懸浮在路軌上？", options: [{ text: "空氣浮力", correct: false }, { text: "磁力同極相拒 / 異極相吸", correct: true }, { text: "熱氣球原理", correct: false }], reason: "利用強大的電磁力抵消重力。", hint: "科技應用：它叫「磁」浮列車。" },
+          { id: 20, q: "以下哪項不是節約用電的好習慣？", options: [{ text: "離開房間隨手關燈", correct: false }, { text: "把冷氣溫度調到最低 (16度)", correct: true }, { text: "選用一級能源標籤電器", correct: false }], reason: "冷氣溫度適中 (25.5度) 才環保。", hint: "常識判斷：冷氣越冷，壓縮機運作越久，越耗電。" },
+          // --- 新增 10 條題目 ---
+          { id: 21, q: "甚麼是「短路」(Short Circuit)？", options: [{ text: "電流不經過電器，直接由電源一極流向另一極", correct: true }, { text: "電線太短", correct: false }, { text: "安全地切斷電源", correct: false }], reason: "短路會導致電流過大，極易引起火災。", hint: "危險警告：電流走了「捷徑」，沒有經過任何阻礙。" },
+          { id: 22, q: "為了節省能源，使用洗衣機時應該？", options: [{ text: "儲滿一機衣物才洗", correct: true }, { text: "只有兩件衣服也開機洗", correct: false }, { text: "用熱水洗衣服", correct: false }], reason: "減少開機次數可以節省電力和水。", hint: "生活應用：多洗幾次和一次洗完，哪個更省電？" },
+          { id: 23, q: "人體是否導電體？", options: [{ text: "是", correct: true }, { text: "否", correct: false }, { text: "只有手部導電", correct: false }], reason: "人體含有大量水分和離子，是導電體。", hint: "安全知識：這就是為什麼觸電會對人造成傷害。" },
+          { id: 24, q: "在不使用電器時，為什麼建議拔掉插頭或關掉開關掣？", options: [{ text: "防止電器處於備用狀態消耗電力", correct: true }, { text: "防止灰塵進入", correct: false }, { text: "會讓電器變壞", correct: false }], reason: "許多電器在備用模式(Standby)下仍會消耗微量電力。", hint: "環保貼士：備用電源也是一種浪費。" },
+          { id: 25, q: "揚聲器 (Loudspeaker) 將電能主要轉換成什麼？", options: [{ text: "光能", correct: false }, { text: "聲能", correct: true }, { text: "化學能", correct: false }], reason: "電流訊號使震膜震動，產生聲音。", hint: "直觀判斷：揚聲器是用來做什麼的？" },
+          { id: 26, q: "電動機 (Motor) 的作用是什麼？", options: [{ text: "將動能轉為電能", correct: false }, { text: "將電能轉為動能", correct: true }, { text: "將電能轉為聲能", correct: false }], reason: "馬達利用磁效應產生轉動。", hint: "功能分析：風扇、洗衣機裡面都有它，讓機器「動」起來。" },
+          { id: 27, q: "電壓的單位是什麼？", options: [{ text: "伏特 (Volt)", correct: true }, { text: "安培 (Ampere)", correct: false }, { text: "瓦特 (Watt)", correct: false }], reason: "V 代表伏特。", hint: "單位識別：電池上通常會寫著 1.5V。" },
+          { id: 28, q: "以下哪種發電方式屬於「不可再生能源」？", options: [{ text: "太陽能", correct: false }, { text: "風力", correct: false }, { text: "燃煤發電", correct: true }], reason: "煤炭是化石燃料，用完就沒了。", hint: "資源分類：哪種資源是挖出來燒掉就無法再生的？" },
+          { id: 29, q: "在電路圖中，直線通常代表什麼？", options: [{ text: "電池", correct: false }, { text: "電線", correct: true }, { text: "燈泡", correct: false }], reason: "直線代表連接各元件的導線。", hint: "圖形識別：電路圖中連接各個部分的線條。" },
+          { id: 30, q: "手濕時拔插頭可能會導致什麼後果？", options: [{ text: "插頭變乾", correct: false }, { text: "觸電", correct: true }, { text: "停電", correct: false }], reason: "水降低了皮膚的電阻，極易觸電。", hint: "安全警告：水和電是危險的組合。" }
         ];
 
         // --- 內建 AI 提示組件 ---
@@ -574,7 +616,7 @@
                         : 'bg-slate-900/50 border-slate-700 hover:border-slate-500 hover:bg-slate-800'
                     }`}
                   >
-                    <div className={`p-4 rounded-full bg-slate-950 shadow-inner group-hover:scale-110 transition-transform duration-300`}>
+                    <div className={`w-24 h-24 p-4 rounded-full bg-slate-950 shadow-inner group-hover:scale-110 transition-transform duration-300`}>
                       {t.icon}
                     </div>
                     <h3 className="text-xl font-bold text-slate-200">{t.name}</h3>
@@ -1222,8 +1264,31 @@
           );
         }
 
+        function VictoryScreen({ player, playerClass, weaponStats, onReset }) {
+          return (
+            <div className="text-center animate-zoom-in space-y-8 py-12">
+              <div className="relative inline-block">
+                <Trophy size={120} className="text-yellow-400 mx-auto drop-shadow-[0_0_30px_rgba(250,204,21,0.6)]" />
+                <div className="absolute inset-0 bg-yellow-400 blur-3xl opacity-20"></div>
+              </div>
+              <h2 className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-orange-500">任務完成！</h2>
+              <div className="text-xl text-slate-300">
+                <span className={`${playerClass.color} font-bold`}>{player.name}</span>，你成功拯救了能源核心！<br/>
+                {weaponStats.perfectCount === 3 ? (
+                  <span className="text-purple-400 font-bold block mt-2 text-lg">✨ 傳奇成就：擊敗隱藏魔王 ✨</span>
+                ) : (
+                  <span className="text-slate-500 text-sm">提示：試著在升級階段全對，挑戰更強的敵人...</span>
+                )}
+              </div>
+              <button onClick={onReset} className="inline-flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-white font-bold py-3 px-8 rounded-full transition-all mt-8 border border-slate-600">
+                <RotateCcw size={20} /> 返回總部
+              </button>
+            </div>
+          );
+        }
+
         // --- Main App ---
-        const Game = () => {
+        function Game() {
             const [gameState, setGameState] = useState('start'); 
             const [player, setPlayer] = useState({ name: '', classId: null, hp: 200, maxHp: 200 });
             const [inventory, setInventory] = useState([]); 
@@ -1351,7 +1416,7 @@
                     </div>
                 </div>
             );
-        };
+        }
 
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<Game />);
