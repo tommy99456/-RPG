@@ -1,1301 +1,1360 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { 
-  Zap, Shield, Settings, AlertTriangle, Crosshair, Package, Trophy, RotateCcw, 
-  Flame, Lightbulb, Magnet, CheckCircle, XCircle, Lock, Unlock, ArrowRight, 
-  BrainCircuit, Activity, Sword, Target, Battery, Cpu, Terminal, Sparkles, Frown, HeartPulse, Wind, Star, ZapOff 
-} from 'lucide-react';
-
-// --- 🎨 像素風 SVG 圖像資源 ---
-
-const PixelSvg = ({ children, className }) => (
-  <svg viewBox="0 0 24 24" className={`w-full h-full ${className}`} shapeRendering="crispEdges">
-    {children}
-  </svg>
-);
-
-const AvatarEngineer = () => (
-  <PixelSvg>
-    <rect x="7" y="4" width="10" height="9" fill="#fca5a5" />
-    <rect x="7" y="4" width="10" height="3" fill="#3b82f6" />
-    <rect x="8" y="5" width="3" height="2" fill="#22d3ee" />
-    <rect x="13" y="5" width="3" height="2" fill="#22d3ee" />
-    <rect x="8" y="13" width="8" height="7" fill="#1e3a8a" />
-    <rect x="6" y="13" width="2" height="6" fill="#93c5fd" />
-    <rect x="16" y="13" width="2" height="6" fill="#93c5fd" />
-    <rect x="17" y="16" width="6" height="2" fill="#475569" />
-    <rect x="16" y="15" width="2" height="4" fill="#334155" />
-  </PixelSvg>
-);
-
-const AvatarMage = () => (
-  <PixelSvg>
-    <rect x="8" y="5" width="8" height="8" fill="#fdba74" />
-    <rect x="7" y="3" width="10" height="3" fill="#7c3aed" />
-    <polygon points="8,3 16,3 12,0" fill="#7c3aed" />
-    <rect x="7" y="13" width="10" height="8" fill="#db2777" />
-    <rect x="9" y="13" width="6" height="8" fill="#fbcfe8" />
-    <rect x="18" y="5" width="2" height="16" fill="#78350f" />
-    <rect x="17" y="4" width="4" height="4" fill="#fbbf24" />
-  </PixelSvg>
-);
-
-const AvatarWarrior = () => (
-  <PixelSvg>
-    <rect x="7" y="4" width="10" height="9" fill="#cbd5e1" /> 
-    <rect x="11" y="5" width="2" height="8" fill="#475569" />
-    <rect x="10" y="2" width="4" height="3" fill="#eab308" />
-    <rect x="6" y="13" width="12" height="8" fill="#fbbf24" />
-    <rect x="9" y="13" width="6" height="8" fill="#b45309" />
-    <rect x="3" y="10" width="3" height="10" fill="#94a3b8" />
-    <rect x="2" y="18" width="5" height="2" fill="#475569" />
-  </PixelSvg>
-);
-
-const AvatarBoss = () => (
-  <PixelSvg>
-    <rect x="6" y="4" width="12" height="10" fill="#7f1d1d" /> 
-    <rect x="8" y="7" width="3" height="3" fill="#ef4444" className="animate-pulse"/>
-    <rect x="13" y="7" width="3" height="3" fill="#ef4444" className="animate-pulse"/>
-    <rect x="4" y="14" width="16" height="8" fill="#1f2937" /> 
-    <rect x="8" y="16" width="8" height="4" fill="#b91c1c" />
-    <rect x="3" y="10" width="2" height="6" fill="#991b1b" />
-    <rect x="19" y="10" width="2" height="6" fill="#991b1b" />
-  </PixelSvg>
-);
-
-const AvatarUltimateBoss = () => (
-  <PixelSvg>
-    <rect x="2" y="2" width="20" height="20" fill="#581c87" opacity="0.3" className="animate-pulse" />
-    <path d="M4 2 L8 8 L6 8 Z" fill="#facc15" />
-    <path d="M20 2 L16 8 L18 8 Z" fill="#facc15" />
-    <rect x="6" y="5" width="12" height="10" fill="#4c1d95" /> 
-    <rect x="8" y="8" width="8" height="2" fill="#000000" />
-    <rect x="9" y="8" width="2" height="2" fill="#ef4444" className="animate-ping" />
-    <rect x="13" y="8" width="2" height="2" fill="#ef4444" className="animate-ping" />
-    <rect x="3" y="15" width="18" height="8" fill="#2e1065" /> 
-    <rect x="8" y="15" width="8" height="8" fill="#7e22ce" /> 
-    <rect x="10" y="17" width="4" height="4" fill="#facc15" />
-  </PixelSvg>
-);
-
-const WeaponRailgun = ({ level }) => (
-  <svg viewBox="0 0 200 100" className="w-full h-full">
-    <rect x="40" y="30" width="120" height="40" rx="5" fill="#1e293b" stroke="#06b6d4" strokeWidth="2" />
-    <path d="M50 30 L50 70 M70 30 L70 70 M90 30 L90 70 M110 30 L110 70 M130 30 L130 70" stroke="#0e7490" strokeWidth="2" />
-    {level > 1 && <rect x="45" y="45" width="110" height="10" fill="#22d3ee" className="animate-pulse" />}
-    {level > 2 && <circle cx="160" cy="50" r="10" fill="#67e8f9" className="animate-ping" />}
-    <rect x="20" y="40" width="20" height="20" fill="#334155" />
-  </svg>
-);
-
-const WeaponStaff = ({ level }) => (
-  <svg viewBox="0 0 200 100" className="w-full h-full">
-    <rect x="20" y="45" width="160" height="10" rx="2" fill="#431407" />
-    <circle cx="170" cy="50" r="15" fill="#c2410c" />
-    {level > 1 && <circle cx="170" cy="50" r="10" fill="#f97316" className="animate-pulse" />}
-    {level > 2 && (
-      <g>
-        <circle cx="170" cy="50" r="25" fill="none" stroke="#fbbf24" strokeWidth="2" className="animate-spin-slow" strokeDasharray="5,5" />
-      </g>
-    )}
-  </svg>
-);
-
-const WeaponSaber = ({ level }) => (
-  <svg viewBox="0 0 200 100" className="w-full h-full">
-    <rect x="20" y="40" width="40" height="20" rx="2" fill="#3f3f46" stroke="#a1a1aa" />
-    <path d="M60 50 L180 50" stroke="#eab308" strokeWidth="10" strokeLinecap="round" opacity="0.3" />
-    {level > 0 && <path d="M60 50 L180 50" stroke="#facc15" strokeWidth="6" strokeLinecap="round" className="animate-pulse" />}
-    {level > 2 && <path d="M60 50 L180 50" stroke="#fef08a" strokeWidth="2" strokeLinecap="round" />}
-  </svg>
-);
-
-// --- Game Constants ---
-
-const CLASSES = [
-  {
-    id: 'engineer',
-    name: '機甲工程師',
-    roleType: 'Magnetic',
-    Avatar: AvatarEngineer,
-    Weapon: WeaponRailgun,
-    weaponName: '超電磁加農砲',
-    ultimateName: '量子軌道轟炸', // 必殺技
-    desc: '操控「磁效應」的大師。利用線圈和鐵芯，產生強大的磁力衝擊。',
-    color: 'text-cyan-400',
-    borderColor: 'border-cyan-500',
-    bg: 'bg-cyan-950/80',
-    btnBg: 'bg-cyan-600 hover:bg-cyan-500',
-    partName: '超導線圈',
-    partIcon: <Magnet size={32} />,
-    activeColor: 'cyan'
-  },
-  {
-    id: 'mage',
-    name: '火炎法師', 
-    roleType: 'Thermal',
-    Avatar: AvatarMage,
-    Weapon: WeaponStaff,
-    weaponName: '高熱離子法杖',
-    ultimateName: '末日高熱雷劫', // 必殺技
-    desc: '精通「熱效應」的奧秘。利用高電阻發熱線，釋放灼熱的能量。',
-    color: 'text-orange-400',
-    borderColor: 'border-orange-500',
-    bg: 'bg-orange-950/80',
-    btnBg: 'bg-orange-600 hover:bg-orange-500',
-    partName: '高阻發熱絲',
-    partIcon: <Flame size={32} />,
-    activeColor: 'orange'
-  },
-  {
-    id: 'warrior',
-    name: '光能戰士',
-    roleType: 'Luminous',
-    Avatar: AvatarWarrior,
-    Weapon: WeaponSaber,
-    weaponName: '光子雷射劍',
-    ultimateName: '超光子爆裂斬', // 必殺技
-    desc: '駕馭「光效應」的力量。利用 LED 晶體匯聚光束，斬斷黑暗。',
-    color: 'text-yellow-400',
-    borderColor: 'border-yellow-500',
-    bg: 'bg-yellow-950/80',
-    btnBg: 'bg-yellow-600 hover:bg-yellow-500',
-    partName: '聚光 LED 晶體',
-    partIcon: <Lightbulb size={32} />,
-    activeColor: 'yellow'
-  }
-];
-
-const TREASURES = [
-  { type: 'Magnetic', name: '超導線圈組件', desc: '蘊含強大磁場潛力的精密線圈。', icon: <Magnet size={64} className="text-cyan-400" /> },
-  { type: 'Thermal', name: '高阻發熱核心', desc: '能瞬間產生極高溫度的核心材料。', icon: <Flame size={64} className="text-orange-400" /> },
-  { type: 'Luminous', name: '光子聚合晶體', desc: '能夠將電能高效率轉化為純淨光束。', icon: <Lightbulb size={64} className="text-yellow-400" /> }
-];
-
-const MASTER_QUESTION_POOL = [
-  { id: 1, q: "電飯煲主要利用電流的什麼效應來煮飯？", options: [{ text: "熱效應", correct: true }, { text: "磁效應", correct: false }, { text: "光效應", correct: false }], reason: "電飯煲內的發熱線會產生熱能煮食。", hint: "分析：電飯煲的目的是「煮熟」食物，這需要高溫。請思考哪種效應能產生熱量。" },
-  { id: 2, q: "廢鐵處理場的起重機利用什麼來吸起廢鐵？", options: [{ text: "巨大的磁石", correct: false }, { text: "電磁鐵", correct: true }, { text: "吸塵機", correct: false }], reason: "電磁鐵通電有磁，斷電無磁，方便控制。", hint: "分析：起重機需要「吸起」也要能隨時「放下」廢鐵。永久磁鐵無法關閉磁力。" },
-  { id: 3, q: "以下哪種電器同時應用了「熱效應」和「磁效應」？", options: [{ text: "LED 燈", correct: false }, { text: "電暖爐", correct: false }, { text: "風筒 (吹風機)", correct: true }], reason: "風筒有發熱線產生熱，也有馬達產生風。", hint: "分析：這個電器既要能吹出風（需要馬達轉動），又要能吹出暖氣（需要發熱）。" },
-  { id: 4, q: "增加電磁鐵線圈的圈數，磁力會怎樣？", options: [{ text: "變強", correct: true }, { text: "變弱", correct: false }, { text: "不變", correct: false }], reason: "線圈越密，磁場越強。", hint: "數據庫檢索：電磁鐵的磁力與電流大小及線圈密度成正比。" },
-  { id: 5, q: "為什麼我們不應該用濕手觸摸電掣？", options: [{ text: "會弄髒電掣", correct: false }, { text: "自來水是電導體，容易觸電", correct: true }, { text: "開關會失靈", correct: false }], reason: "一般的水含有雜質，是可以導電的。", hint: "安全警告：自來水並非純水，水中含有礦物質，使其成為導體。" },
-  { id: 6, q: "以下哪種物料是絕緣體（Insulator）？", options: [{ text: "銅線", correct: false }, { text: "鐵釘", correct: false }, { text: "橡膠手套", correct: true }], reason: "橡膠不易讓電流通過，常用作保護層。", hint: "分析：我們需要找出一種「不容易」讓電通過的材料，常用於包裹電線。" },
-  { id: 7, q: "電熨斗（燙斗）運作時，是將電能轉換成什麼？", options: [{ text: "聲能", correct: false }, { text: "熱能", correct: true }, { text: "動能", correct: false }], reason: "電熨斗利用發熱板產生高溫。", hint: "觀察：使用電熨斗時，底板會變得非常燙，這是為了撫平衣物。" },
-  { id: 8, q: "電磁鐵相對於永久磁鐵的一個主要優點是什麼？", options: [{ text: "磁力永遠不變", correct: false }, { text: "可以控制磁力的開關", correct: true }, { text: "比較輕", correct: false }], reason: "通電有磁，斷電無磁是其最大特性。", hint: "比較：永久磁鐵的磁力一直存在，但電磁鐵可以透過切斷電源來消除磁力。" },
-  { id: 9, q: "購買電器時，能源標籤上的一級代表什麼？", options: [{ text: "最慳電（能源效益最高）", correct: true }, { text: "最耗電", correct: false }, { text: "價格最貴", correct: false }], reason: "1級最慳電，5級最耗電。", hint: "環保數據：綠色的一級標籤代表能源效益最高。" },
-  { id: 10, q: "電風扇轉動時，主要將電能轉換成什麼？", options: [{ text: "光能", correct: false }, { text: "動能", correct: true }, { text: "化學能", correct: false }], reason: "馬達轉動扇葉，產生動能。", hint: "物理分析：扇葉在「移動」和「旋轉」，這屬於機械運動。" },
-  { id: 11, q: "如果電線的絕緣外層破損了，應該怎麼做？", options: [{ text: "用膠紙黏好繼續用", correct: false }, { text: "立即停止使用並更換", correct: true }, { text: "小心避開破損處即可", correct: false }], reason: "破損電線極易引致漏電或火災。", hint: "安全協議：破損的絕緣層會導致漏電風險，必須立即採取最安全的措施。" },
-  { id: 12, q: "以下哪個是能夠導電的非金屬？", options: [{ text: "木頭", correct: false }, { text: "石墨 (鉛筆芯)", correct: true }, { text: "玻璃", correct: false }], reason: "石墨是少數能導電的非金屬。", hint: "特例分析：雖然大多數非金屬是絕緣體，但鉛筆芯的主要成分是碳的一種形式，可以導電。" },
-  { id: 13, q: "電鈴 (Electric Bell) 能夠發聲，是因為裡面有什麼裝置？", options: [{ text: "電磁鐵", correct: true }, { text: "發熱線", correct: false }, { text: "LED 燈", correct: false }], reason: "電磁鐵吸引小鎚敲擊鈴蓋。", hint: "構造分析：電鈴需要一個裝置來快速吸引和釋放小鎚子去敲擊鈴聲。" },
-  { id: 14, q: "要想增強電磁鐵的磁力，除了增加線圈，還可以？", options: [{ text: "減少電池數量", correct: false }, { text: "增加串聯電池數量", correct: true }, { text: "將鐵芯換成木棒", correct: false }], reason: "增加電池（串聯）可增加電流，增強磁力。", hint: "能量公式：磁力與電流大小有關。串聯更多電池可以提供更大的電壓和電流。" }
-];
-
-// --- 內建 AI 提示組件 ---
-const TAS_Hint = ({ hintText }) => {
-  const [show, setShow] = useState(false);
-  const [loading, setLoading] = useState(false);
-
-  const handleAnalyze = () => {
-    if (show) return;
-    setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      setShow(true);
-    }, 800);
-  };
-
-  return (
-    <div className="mt-4">
-      {!show && !loading && (
-        <button 
-          onClick={handleAnalyze}
-          className="flex items-center gap-2 text-xs font-mono text-cyan-400 border border-cyan-500/50 bg-cyan-900/20 px-3 py-2 rounded-lg hover:bg-cyan-900/40 transition-colors mx-auto"
-        >
-          <Sparkles size={14} /> T.A.S. 戰術分析
-        </button>
-      )}
-      
-      {loading && (
-        <div className="text-xs font-mono text-cyan-400 animate-pulse flex items-center justify-center gap-2">
-          <Activity size={14} className="animate-spin" /> 分析運算中...
-        </div>
-      )}
-
-      {show && (
-        <div className="bg-cyan-950/50 border-l-2 border-cyan-500 p-3 rounded-r-lg text-left animate-in slide-in-from-left-2 fade-in">
-          <div className="flex items-center gap-2 text-cyan-400 font-bold text-xs mb-1">
-            <BrainCircuit size={14} /> 分析結果：
-          </div>
-          <p className="text-slate-300 text-sm leading-relaxed">{hintText}</p>
-        </div>
-      )}
-    </div>
-  );
-};
-
-// --- Main Component ---
-const Game = () => {
-  const [gameState, setGameState] = useState('start'); 
-  const [player, setPlayer] = useState({ name: '', classId: null, hp: 200, maxHp: 200 });
-  const [inventory, setInventory] = useState([]); 
-  const [weaponStats, setWeaponStats] = useState({ strength: 0, level: 1, perfectCount: 0 });
-  
-  const usedQuestionIds = useRef(new Set());
-
-  const currentPlayerClass = CLASSES.find(c => c.id === player.classId) || CLASSES[0];
-
-  const startGame = (name) => {
-    setPlayer(p => ({ ...p, name }));
-    setGameState('class_select');
-  };
-
-  const selectClass = (classId) => {
-    setPlayer(p => ({ ...p, classId }));
-    setGameState('level1');
-  };
-
-  const resetGame = () => {
-    setGameState('start');
-    setPlayer({ name: '', classId: null, hp: 200, maxHp: 200 });
-    setInventory([]);
-    setWeaponStats({ strength: 0, level: 1, perfectCount: 0 });
-    usedQuestionIds.current = new Set(); 
-  };
-
-  const getUniqueQuestions = useCallback((count) => {
-    const used = usedQuestionIds.current;
-    const available = MASTER_QUESTION_POOL.filter(q => !used.has(q.id));
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>電之特工隊：像素戰記</title>
     
-    let source = available;
-    if (available.length < count) {
-      source = MASTER_QUESTION_POOL; 
-      usedQuestionIds.current = new Set();
-    }
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
 
-    const shuffled = [...source].sort(() => 0.5 - Math.random());
-    const selected = shuffled.slice(0, count);
-    selected.forEach(q => usedQuestionIds.current.add(q.id));
-    return selected;
-  }, []);
-
-  return (
-    <div className="min-h-screen bg-slate-950 text-cyan-50 font-sans selection:bg-cyan-500 selection:text-black overflow-hidden relative">
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#0f172a_1px,transparent_1px),linear-gradient(to_bottom,#0f172a_1px,transparent_1px)] bg-[size:4rem_4rem] pointer-events-none opacity-50"></div>
-
-      <div className="max-w-4xl mx-auto p-4 min-h-screen flex flex-col relative z-10">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap');
+        body { font-family: 'Noto Sans TC', sans-serif; }
         
-        {/* HUD */}
-        {gameState !== 'start' && gameState !== 'class_select' && (
-          <header className="flex flex-wrap justify-between items-center py-4 mb-6 bg-slate-900/80 backdrop-blur-md rounded-xl px-6 border-b border-white/10 shadow-lg transition-all duration-500">
-            <div className="flex items-center gap-4">
-              <div className={`w-14 h-14 rounded-full border-2 ${currentPlayerClass.borderColor} overflow-hidden bg-slate-900 shadow-[0_0_15px_rgba(0,0,0,0.5)]`}>
-                <currentPlayerClass.Avatar />
-              </div>
-              <div>
-                <div className={`font-bold text-xl leading-none ${currentPlayerClass.color}`}>{player.name}</div>
-                <div className="text-sm text-slate-400 flex items-center gap-1 mt-1">
-                  {currentPlayerClass.icon} {currentPlayerClass.name}
-                </div>
-              </div>
-            </div>
-            
-            <div className="flex gap-4 items-center">
-              {weaponStats.strength > 0 && (
-                 <div className="flex items-center gap-2 text-yellow-500 px-4 py-2 bg-yellow-900/20 border border-yellow-700/50 rounded-full font-mono font-bold animate-pulse">
-                    <Crosshair size={18} />
-                    <span>戰力: {weaponStats.strength}</span>
-                 </div>
-              )}
-              <div className="flex items-center gap-2 px-4 py-2 bg-cyan-900/20 border border-cyan-700/50 rounded-full">
-                <Package size={18} className="text-cyan-400" />
-                <span className="font-mono">{inventory.length} 道具</span>
-              </div>
-            </div>
-          </header>
-        )}
-
-        <main className="flex-grow flex flex-col justify-center">
-          {gameState === 'start' && <StartScreen onStart={startGame} />}
-          {gameState === 'class_select' && <ClassSelectScreen onSelect={selectClass} />}
-          {gameState === 'level1' && (
-            <Level1_Main 
-              playerClass={currentPlayerClass} 
-              getQuestions={getUniqueQuestions}
-              onReset={resetGame}
-              onComplete={(item) => {
-                setInventory([item]);
-                setGameState('level2');
-              }} 
-            />
-          )}
-          {gameState === 'level2' && (
-            <Level2_Upgrade_Challenge 
-              playerClass={currentPlayerClass}
-              getQuestions={getUniqueQuestions}
-              inventory={inventory}
-              onComplete={(stats) => {
-                setWeaponStats(stats);
-                setGameState('boss_intro');
-              }}
-            />
-          )}
-          {gameState === 'boss_intro' && (
-            <BossIntro 
-              playerClass={currentPlayerClass}
-              weaponStats={weaponStats}
-              onStartBattle={() => setGameState('boss_battle')} 
-            />
-          )}
-          {gameState === 'boss_battle' && (
-            <BossBattle 
-              player={player}
-              playerClass={currentPlayerClass}
-              weaponStats={weaponStats}
-              getQuestions={getUniqueQuestions}
-              onWin={() => setGameState('victory')} 
-              onLose={resetGame} 
-            />
-          )}
-          {gameState === 'victory' && (
-            <VictoryScreen 
-              player={player} 
-              playerClass={currentPlayerClass}
-              weaponStats={weaponStats}
-              onReset={resetGame} 
-            />
-          )}
-        </main>
-      </div>
-    </div>
-  );
-};
-
-// --- Screens ---
-
-const StartScreen = ({ onStart }) => {
-  const [name, setName] = useState('');
-  
-  return (
-    <div className="text-center space-y-8 animate-fade-in-up">
-      <div className="relative inline-block group">
-        <div className="absolute inset-0 bg-cyan-500 blur-3xl opacity-20 animate-pulse"></div>
-        <div className="w-40 h-40 mx-auto bg-slate-900 rounded-full border-4 border-cyan-500 flex items-center justify-center shadow-[0_0_50px_rgba(6,182,212,0.3)]">
-           <Zap size={80} className="text-cyan-400 group-hover:scale-110 transition-transform duration-500" />
-        </div>
-      </div>
-      
-      <div>
-        <h1 className="text-5xl md:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 tracking-tight pb-2">
-          電之特工隊
-        </h1>
-        <h2 className="text-2xl text-cyan-200 mt-2 font-light tracking-widest uppercase">RPG 像素戰記</h2>
-      </div>
-
-      <div className="max-w-md mx-auto bg-slate-900/80 p-8 rounded-2xl border border-cyan-800 shadow-[0_0_50px_rgba(8,145,178,0.1)] backdrop-blur-md">
-        <div className="mb-6 flex items-center justify-center gap-2 text-cyan-300 text-sm font-mono bg-cyan-900/30 p-2 rounded-lg border border-cyan-700/50">
-          <BrainCircuit size={16} /> 戰術分析系統 (T.A.S.) 已連線
-        </div>
-        <p className="text-slate-400 mb-6 text-lg">輸入你的特工代號，準備覺醒你的能量屬性...</p>
-        <input 
-          type="text" 
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder="輸入代號 (例如: 小強)" 
-          className="w-full bg-slate-800 border-2 border-slate-700 focus:border-cyan-500 rounded-lg px-4 py-4 text-center text-2xl text-white outline-none transition-all mb-4 placeholder-slate-600 font-bold"
-          onKeyDown={(e) => e.key === 'Enter' && name && onStart(name)}
-        />
-        <button 
-          onClick={() => name && onStart(name)}
-          disabled={!name}
-          className="w-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-4 rounded-lg transition-all shadow-lg transform hover:scale-[1.02] active:scale-[0.98]"
-        >
-          開始冒險
-        </button>
-      </div>
-    </div>
-  );
-};
-
-const ClassSelectScreen = ({ onSelect }) => (
-  <div className="animate-fade-in w-full max-w-5xl mx-auto">
-    <h2 className="text-4xl font-bold text-center mb-4 text-white">選擇你的專屬職業</h2>
-    <p className="text-center text-slate-400 mb-12 text-lg">不同的職業對應不同的「電的效應」，決定了你的武器屬性。</p>
-    
-    <div className="grid md:grid-cols-3 gap-8">
-      {CLASSES.map((c) => (
-        <button 
-          key={c.id}
-          onClick={() => onSelect(c.id)}
-          className={`group relative rounded-3xl border-2 overflow-hidden transition-all text-left flex flex-col ${c.bg} ${c.borderColor} hover:scale-105 hover:shadow-[0_0_40px_rgba(0,0,0,0.5)]`}
-        >
-          {/* Card Image Header with SVG Avatar */}
-          <div className="h-48 bg-slate-900/50 flex items-center justify-center relative overflow-hidden">
-             <div className={`absolute inset-0 opacity-20 bg-${c.activeColor}-500 mix-blend-overlay`}></div>
-             <div className="w-32 h-32 transform group-hover:scale-110 transition-transform duration-500">
-               <c.Avatar />
-             </div>
-          </div>
-
-          <div className="p-6 flex flex-col flex-grow">
-            <h3 className={`text-3xl font-black ${c.color} mb-2`}>{c.name}</h3>
-            <div className="text-xs font-mono px-2 py-1 bg-black/40 rounded w-fit text-slate-300 mb-3 border border-white/10">專精: {c.roleType === 'Magnetic' ? '磁效應' : c.roleType === 'Thermal' ? '熱效應' : '光效應'}</div>
-            <p className="text-slate-300 leading-relaxed font-medium mb-4">{c.desc}</p>
-            
-            <div className="mt-auto pt-4 border-t border-white/10 flex justify-between items-center text-sm font-mono text-slate-400">
-              <span>專屬武器</span>
-              <span className={c.color}>{c.weaponName}</span>
-            </div>
-          </div>
-        </button>
-      ))}
-    </div>
-  </div>
-);
-
-// --- Level 1 Logic ---
-
-const Level1_Main = ({ playerClass, getQuestions, onReset, onComplete }) => {
-  const [phase, setPhase] = useState('quiz'); 
-  
-  if (phase === 'quiz') {
-    return (
-      <Level1_Quiz 
-        getQuestions={getQuestions} 
-        onQuizPass={() => setPhase('treasure')} 
-        onQuizFail={onReset}
-      />
-    );
-  } else {
-    return <Level1_Treasure playerClass={playerClass} onComplete={onComplete} />;
-  }
-};
-
-const Level1_Quiz = ({ getQuestions, onQuizPass, onQuizFail }) => {
-  const [qIndex, setQIndex] = useState(0);
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [isCorrect, setIsCorrect] = useState(false);
-  const [score, setScore] = useState(0);
-  const [quizQuestions, setQuizQuestions] = useState([]);
-  const [isFinished, setIsFinished] = useState(false);
-
-  useEffect(() => {
-    setQuizQuestions(getQuestions(4));
-  }, [getQuestions]);
-
-  const handleAnswer = (correct) => {
-    setIsCorrect(correct);
-    setShowFeedback(true);
-    if (correct) {
-      setScore(prev => prev + 1);
-    }
-  };
-
-  const nextQ = () => {
-    setShowFeedback(false);
-    if (qIndex < quizQuestions.length - 1) {
-      setQIndex(prev => prev + 1);
-    } else {
-      setIsFinished(true);
-    }
-  };
-
-  if (quizQuestions.length === 0) return <div className="text-center text-white mt-20 animate-pulse">正在載入安全協議...</div>;
-
-  if (isFinished) {
-    const passed = score >= 3;
-    return (
-      <div className="max-w-xl mx-auto w-full animate-fade-in text-center p-8 bg-slate-900 border-2 border-slate-700 rounded-2xl shadow-2xl">
-        <div className="mb-6">
-          {passed ? <CheckCircle size={80} className="mx-auto text-green-500 mb-4 animate-bounce"/> : <Frown size={80} className="mx-auto text-red-500 mb-4 animate-pulse"/>}
-          <h2 className={`text-3xl font-bold mb-2 ${passed ? 'text-green-400' : 'text-red-400'}`}>
-            {passed ? "認證通過！" : "認證失敗..."}
-          </h2>
-          <p className="text-slate-300 text-lg">
-            你的成績: <span className="font-mono text-2xl font-bold text-white">{score}/4</span>
-          </p>
-          {!passed && <p className="text-slate-400 mt-2 text-sm">需要答對 3 題或以上才能開啟寶庫。</p>}
-        </div>
-
-        {passed ? (
-          <button onClick={onQuizPass} className="w-full bg-green-600 hover:bg-green-500 text-white font-bold py-4 rounded-xl text-xl shadow-lg transition-transform hover:scale-105">
-            進入寶庫 <ArrowRight className="inline ml-2"/>
-          </button>
-        ) : (
-          <button onClick={onQuizFail} className="w-full bg-red-600 hover:bg-red-500 text-white font-bold py-4 rounded-xl text-xl shadow-lg transition-transform hover:scale-105">
-            重新特訓 <RotateCcw className="inline ml-2"/>
-          </button>
-        )}
-      </div>
-    );
-  }
-
-  return (
-    <div className="max-w-3xl mx-auto w-full animate-fade-in">
-      <div className="flex justify-between items-end mb-6">
-        <h2 className="text-3xl font-bold text-white flex items-center gap-3">
-          <Terminal size={32} className="text-slate-400" /> 
-          區域 1: 安全閘門認證
-        </h2>
-        <span className="font-mono text-slate-400 bg-slate-800 px-3 py-1 rounded-lg">Check {qIndex + 1}/{quizQuestions.length}</span>
-      </div>
-
-      <div className="bg-slate-900 border border-slate-700 rounded-2xl p-8 shadow-2xl min-h-[400px] flex flex-col justify-center relative">
-        <div className="absolute top-4 right-4 flex items-center gap-2 text-slate-500 font-mono text-sm">
-           <Lock size={16} /> 需答對 3 題
-        </div>
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        .animate-shake { animation: shake 0.3s ease-in-out; }
         
-        <h3 className="text-2xl font-bold mb-8 leading-relaxed text-slate-100">
-          {quizQuestions[qIndex].q}
-        </h3>
+        @keyframes pulse-slow {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .animate-pulse-slow { animation: pulse-slow 3s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+    </style>
+</head>
+<body class="bg-slate-950 text-white overflow-x-hidden">
+    <div id="root"></div>
 
-        {!showFeedback ? (
-          <div className="space-y-4">
-            <div className="grid gap-4">
-              {quizQuestions[qIndex].options.map((opt, i) => (
-                <button 
-                  key={i}
-                  onClick={() => handleAnswer(opt.correct)}
-                  className="group p-6 bg-slate-800 hover:bg-slate-700 border-2 border-slate-700 hover:border-blue-400 rounded-xl text-left transition-all hover:translate-x-2 flex items-center justify-between"
-                >
-                  <div className="flex items-center gap-4">
-                    <span className="font-mono text-slate-500 group-hover:text-blue-400 transition-colors text-lg">0{i+1}</span>
-                    <span className="text-lg font-medium text-slate-200 group-hover:text-white">{opt.text}</span>
-                  </div>
-                </button>
-              ))}
-            </div>
-            <TAS_Hint hintText={quizQuestions[qIndex].hint} />
-          </div>
-        ) : (
-          <div className={`p-6 rounded-xl border-2 text-center animate-in zoom-in-95 ${isCorrect ? 'bg-green-900/30 border-green-500' : 'bg-red-900/30 border-red-500'}`}>
-            <div className="flex justify-center mb-4">
-              {isCorrect ? <CheckCircle size={48} className="text-green-500" /> : <XCircle size={48} className="text-red-500" />}
-            </div>
-            <h4 className={`text-xl font-bold mb-2 ${isCorrect ? 'text-green-400' : 'text-red-400'}`}>
-              {isCorrect ? "回答正確！" : "回答錯誤！"}
-            </h4>
-            <p className="text-slate-300 mb-6">{quizQuestions[qIndex].reason}</p>
-            <button 
-              onClick={nextQ}
-              className="bg-slate-700 hover:bg-slate-600 text-white px-8 py-3 rounded-lg font-bold transition-all"
-            >
-              {qIndex < quizQuestions.length - 1 ? "下一題" : "查看結果"}
-            </button>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-};
+    <script type="text/babel">
+        const { useState, useEffect, useRef, useCallback } = React;
 
-const Level1_Treasure = ({ playerClass, onComplete }) => {
-  const [selectedTreasure, setSelectedTreasure] = useState(null);
-  const [errorMsg, setErrorMsg] = useState('');
+        // --- 核心修復：安全的 Icon Wrapper ---
+        const IconWrapper = ({ name, size = 24, className }) => {
+            const ref = useRef(null);
 
-  const handleSelect = (treasure) => {
-    setSelectedTreasure(treasure);
-    setErrorMsg('');
-  };
+            useEffect(() => {
+                if (ref.current && window.lucide && window.lucide.icons[name]) {
+                    ref.current.innerHTML = '';
+                    const svg = window.lucide.createElement(window.lucide.icons[name]);
+                    svg.setAttribute('width', size);
+                    svg.setAttribute('height', size);
+                    if (className) {
+                        svg.setAttribute('class', className);
+                    }
+                    ref.current.appendChild(svg);
+                }
+            }, [name, size, className]);
 
-  const confirmSelection = () => {
-    if (!selectedTreasure) return;
+            return <span ref={ref} style={{ display: 'inline-flex', verticalAlign: 'middle' }} />;
+        };
 
-    if (selectedTreasure.type === playerClass.roleType) {
-      onComplete(selectedTreasure.name);
-    } else {
-      let correctEffect = playerClass.roleType === 'Magnetic' ? '磁效應' : playerClass.roleType === 'Thermal' ? '熱效應' : '光效應';
-      setErrorMsg(`警告：你的職業是【${playerClass.name}】，只能裝備【${correctEffect}】的寶物！`);
-    }
-  };
+        // --- 定義所有用到的圖示 ---
+        const Zap = (p) => <IconWrapper name="zap" {...p} />;
+        const Shield = (p) => <IconWrapper name="shield" {...p} />;
+        const Settings = (p) => <IconWrapper name="settings" {...p} />;
+        const AlertTriangle = (p) => <IconWrapper name="alert-triangle" {...p} />;
+        const Crosshair = (p) => <IconWrapper name="crosshair" {...p} />;
+        const Package = (p) => <IconWrapper name="package" {...p} />;
+        const Trophy = (p) => <IconWrapper name="trophy" {...p} />;
+        const RotateCcw = (p) => <IconWrapper name="rotate-ccw" {...p} />;
+        const Flame = (p) => <IconWrapper name="flame" {...p} />;
+        const Lightbulb = (p) => <IconWrapper name="lightbulb" {...p} />;
+        const Magnet = (p) => <IconWrapper name="magnet" {...p} />;
+        const CheckCircle = (p) => <IconWrapper name="check-circle" {...p} />;
+        const XCircle = (p) => <IconWrapper name="x-circle" {...p} />;
+        const Lock = (p) => <IconWrapper name="lock" {...p} />;
+        const Unlock = (p) => <IconWrapper name="unlock" {...p} />;
+        const ArrowRight = (p) => <IconWrapper name="arrow-right" {...p} />;
+        const BrainCircuit = (p) => <IconWrapper name="brain-circuit" {...p} />;
+        const Activity = (p) => <IconWrapper name="activity" {...p} />;
+        const Terminal = (p) => <IconWrapper name="terminal" {...p} />;
+        const Sparkles = (p) => <IconWrapper name="sparkles" {...p} />;
+        const Frown = (p) => <IconWrapper name="frown" {...p} />;
+        const Star = (p) => <IconWrapper name="star" {...p} />;
+        const ZapOff = (p) => <IconWrapper name="zap-off" {...p} />;
+        const HeartPulse = (p) => <IconWrapper name="heart-pulse" {...p} />;
+        const Wind = (p) => <IconWrapper name="wind" {...p} />;
+        const Sword = (p) => <IconWrapper name="sword" {...p} />;
+        const Target = (p) => <IconWrapper name="target" {...p} />;
+        const Battery = (p) => <IconWrapper name="battery" {...p} />;
+        const Cpu = (p) => <IconWrapper name="cpu" {...p} />;
 
-  return (
-    <div className="max-w-5xl mx-auto w-full animate-fade-in text-center">
-      <div className="mb-8">
-        <Unlock size={48} className="mx-auto text-yellow-400 mb-4 animate-bounce" />
-        <h2 className="text-4xl font-bold text-white mb-2">寶庫已開啟！</h2>
-        <p className="text-slate-300 text-lg">
-          請根據你的職業 <span className={`${playerClass.color} font-bold`}>{playerClass.name}</span>，<br/>
-          選擇一件適合你的核心寶物帶往下一關。
-        </p>
-      </div>
+        // --- 🎨 像素風 SVG 圖像資源 ---
+        const PixelSvg = ({ children, className }) => (
+          <svg viewBox="0 0 24 24" className={`w-full h-full ${className}`} shapeRendering="crispEdges">
+            {children}
+          </svg>
+        );
 
-      <div className="grid md:grid-cols-3 gap-6 mb-8">
-        {TREASURES.map((t, i) => (
-          <button
-            key={i}
-            onClick={() => handleSelect(t)}
-            className={`relative p-8 rounded-2xl border-2 transition-all flex flex-col items-center gap-4 group ${
-              selectedTreasure === t 
-                ? `bg-slate-800 border-white shadow-[0_0_30px_rgba(255,255,255,0.2)] scale-105` 
-                : 'bg-slate-900/50 border-slate-700 hover:border-slate-500 hover:bg-slate-800'
-            }`}
-          >
-            <div className={`p-4 rounded-full bg-slate-950 shadow-inner group-hover:scale-110 transition-transform duration-300`}>
-              {t.icon}
-            </div>
-            <h3 className="text-xl font-bold text-slate-200">{t.name}</h3>
-            <p className="text-slate-400 text-sm">{t.desc}</p>
-            {selectedTreasure === t && (
-              <div className="absolute top-4 right-4 text-green-400">
-                <CheckCircle size={24} />
-              </div>
+        const AvatarEngineer = () => (
+          <PixelSvg>
+            <rect x="7" y="4" width="10" height="9" fill="#fca5a5" />
+            <rect x="7" y="4" width="10" height="3" fill="#3b82f6" />
+            <rect x="8" y="5" width="3" height="2" fill="#22d3ee" />
+            <rect x="13" y="5" width="3" height="2" fill="#22d3ee" />
+            <rect x="8" y="13" width="8" height="7" fill="#1e3a8a" />
+            <rect x="6" y="13" width="2" height="6" fill="#93c5fd" />
+            <rect x="16" y="13" width="2" height="6" fill="#93c5fd" />
+            <rect x="17" y="16" width="6" height="2" fill="#475569" />
+            <rect x="16" y="15" width="2" height="4" fill="#334155" />
+          </PixelSvg>
+        );
+
+        const AvatarMage = () => (
+          <PixelSvg>
+            <rect x="8" y="5" width="8" height="8" fill="#fdba74" />
+            <rect x="7" y="3" width="10" height="3" fill="#7c3aed" />
+            <polygon points="8,3 16,3 12,0" fill="#7c3aed" />
+            <rect x="7" y="13" width="10" height="8" fill="#db2777" />
+            <rect x="9" y="13" width="6" height="8" fill="#fbcfe8" />
+            <rect x="18" y="5" width="2" height="16" fill="#78350f" />
+            <rect x="17" y="4" width="4" height="4" fill="#fbbf24" />
+          </PixelSvg>
+        );
+
+        const AvatarWarrior = () => (
+          <PixelSvg>
+            <rect x="7" y="4" width="10" height="9" fill="#cbd5e1" /> 
+            <rect x="11" y="5" width="2" height="8" fill="#475569" />
+            <rect x="10" y="2" width="4" height="3" fill="#eab308" />
+            <rect x="6" y="13" width="12" height="8" fill="#fbbf24" />
+            <rect x="9" y="13" width="6" height="8" fill="#b45309" />
+            <rect x="3" y="10" width="3" height="10" fill="#94a3b8" />
+            <rect x="2" y="18" width="5" height="2" fill="#475569" />
+          </PixelSvg>
+        );
+
+        const AvatarBoss = () => (
+          <PixelSvg>
+            <rect x="6" y="4" width="12" height="10" fill="#7f1d1d" /> 
+            <rect x="8" y="7" width="3" height="3" fill="#ef4444" className="animate-pulse"/>
+            <rect x="13" y="7" width="3" height="3" fill="#ef4444" className="animate-pulse"/>
+            <rect x="4" y="14" width="16" height="8" fill="#1f2937" /> 
+            <rect x="8" y="16" width="8" height="4" fill="#b91c1c" />
+            <rect x="3" y="10" width="2" height="6" fill="#991b1b" />
+            <rect x="19" y="10" width="2" height="6" fill="#991b1b" />
+          </PixelSvg>
+        );
+
+        const AvatarUltimateBoss = () => (
+          <PixelSvg>
+            <rect x="2" y="2" width="20" height="20" fill="#581c87" opacity="0.3" className="animate-pulse" />
+            <path d="M4 2 L8 8 L6 8 Z" fill="#facc15" />
+            <path d="M20 2 L16 8 L18 8 Z" fill="#facc15" />
+            <rect x="6" y="5" width="12" height="10" fill="#4c1d95" /> 
+            <rect x="8" y="8" width="8" height="2" fill="#000000" />
+            <rect x="9" y="8" width="2" height="2" fill="#ef4444" className="animate-ping" />
+            <rect x="13" y="8" width="2" height="2" fill="#ef4444" className="animate-ping" />
+            <rect x="3" y="15" width="18" height="8" fill="#2e1065" /> 
+            <rect x="8" y="15" width="8" height="8" fill="#7e22ce" /> 
+            <rect x="10" y="17" width="4" height="4" fill="#facc15" />
+          </PixelSvg>
+        );
+
+        const WeaponRailgun = ({ level }) => (
+          <svg viewBox="0 0 200 100" className="w-full h-full">
+            <rect x="40" y="30" width="120" height="40" rx="5" fill="#1e293b" stroke="#06b6d4" strokeWidth="2" />
+            <path d="M50 30 L50 70 M70 30 L70 70 M90 30 L90 70 M110 30 L110 70 M130 30 L130 70" stroke="#0e7490" strokeWidth="2" />
+            {level > 1 && <rect x="45" y="45" width="110" height="10" fill="#22d3ee" className="animate-pulse" />}
+            {level > 2 && <circle cx="160" cy="50" r="10" fill="#67e8f9" className="animate-ping" />}
+            <rect x="20" y="40" width="20" height="20" fill="#334155" />
+          </svg>
+        );
+
+        const WeaponStaff = ({ level }) => (
+          <svg viewBox="0 0 200 100" className="w-full h-full">
+            <rect x="20" y="45" width="160" height="10" rx="2" fill="#431407" />
+            <circle cx="170" cy="50" r="15" fill="#c2410c" />
+            {level > 1 && <circle cx="170" cy="50" r="10" fill="#f97316" className="animate-pulse" />}
+            {level > 2 && (
+              <g>
+                <circle cx="170" cy="50" r="25" fill="none" stroke="#fbbf24" strokeWidth="2" className="animate-spin-slow" strokeDasharray="5,5" />
+              </g>
             )}
-          </button>
-        ))}
-      </div>
+          </svg>
+        );
 
-      {errorMsg && (
-        <div className="bg-red-900/50 border border-red-500 text-red-200 px-6 py-4 rounded-xl mb-6 inline-block animate-shake">
-          <div className="flex items-center gap-2">
-            <AlertTriangle size={20} />
-            {errorMsg}
-          </div>
-        </div>
-      )}
+        const WeaponSaber = ({ level }) => (
+          <svg viewBox="0 0 200 100" className="w-full h-full">
+            <rect x="20" y="40" width="40" height="20" rx="2" fill="#3f3f46" stroke="#a1a1aa" />
+            <path d="M60 50 L180 50" stroke="#eab308" strokeWidth="10" strokeLinecap="round" opacity="0.3" />
+            {level > 0 && <path d="M60 50 L180 50" stroke="#facc15" strokeWidth="6" strokeLinecap="round" className="animate-pulse" />}
+            {level > 2 && <path d="M60 50 L180 50" stroke="#fef08a" strokeWidth="2" strokeLinecap="round" />}
+          </svg>
+        );
 
-      <button
-        onClick={confirmSelection}
-        disabled={!selectedTreasure}
-        className={`px-12 py-4 rounded-full font-black text-xl shadow-lg transition-all transform hover:scale-105 active:scale-95 flex items-center gap-2 mx-auto ${
-          !selectedTreasure 
-            ? 'bg-slate-700 text-slate-500 cursor-not-allowed' 
-            : `${playerClass.btnBg} text-white`
-        }`}
-      >
-        確認領取 <ArrowRight size={24} />
-      </button>
-    </div>
-  );
-};
+        // --- Game Constants ---
 
-// --- Level 2 Logic ---
-
-const Level2_Upgrade_Challenge = ({ playerClass, getQuestions, inventory, onComplete }) => {
-  const [stage, setStage] = useState(0); 
-  const [power, setPower] = useState(0);
-  const [perfectCount, setPerfectCount] = useState(0); 
-  const [modalOpen, setModalOpen] = useState(false);
-  const [currentQ, setCurrentQ] = useState(null);
-  const [feedback, setFeedback] = useState(null);
-
-  const upgradeSteps = [
-    { name: "安裝核心電源", gain: 50 },
-    { name: "強化能量傳輸", gain: 70 },
-    { name: "優化輸出功率", gain: 100 }
-  ];
-
-  const startUpgrade = () => {
-    const q = getQuestions(1)[0];
-    setCurrentQ(q);
-    setModalOpen(true);
-    setFeedback(null);
-  };
-
-  const handleAnswer = (correct) => {
-    const stepGain = upgradeSteps[stage].gain;
-    const actualGain = correct ? stepGain : 0; 
-    
-    if (correct) {
-      setPerfectCount(prev => prev + 1);
-    }
-
-    setFeedback({
-      correct,
-      msg: correct ? "升級成功！完美安裝！" : "安裝失敗...組件損壞，無法獲得能量。",
-      gain: actualGain
-    });
-
-    setTimeout(() => {
-      setPower(prev => prev + actualGain);
-      setModalOpen(false);
-      if (stage < 2) {
-        setStage(prev => prev + 1);
-      } else {
-        setStage(3); 
-      }
-    }, 2500);
-  };
-
-  return (
-    <div className="max-w-4xl mx-auto w-full animate-fade-in">
-      <div className="mb-8 text-center">
-        <h2 className="text-3xl font-bold text-white mb-2">區域 2: 武器研發室</h2>
-        <p className="text-slate-400 text-lg">
-          正在使用 <span className="text-white font-mono bg-slate-800 px-2 rounded">{inventory[0]}</span> 強化武器。<br/>
-          解決<span className="text-yellow-400">技術難題</span>以決定最終戰鬥力。<br/>
-          <span className="text-red-400 text-sm">注意：答錯問題將導致該階段升級失敗 (0 加成)。</span>
-        </p>
-      </div>
-
-      <div className="flex flex-col md:flex-row gap-8 items-center justify-center">
-        
-        {/* Weapon Visual - Blueprint Card */}
-        <div className="relative w-80 h-96 bg-slate-900 rounded-3xl border-4 border-slate-700 overflow-hidden shadow-2xl group">
-           {/* Grid Background */}
-           <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-[size:20px_20px] opacity-20"></div>
-           
-           <div className="p-6 h-full flex flex-col">
-             <div className="flex justify-between items-center mb-4 border-b border-slate-700 pb-2">
-               <span className="text-xs font-mono text-slate-500">BLUEPRINT: {playerClass.weaponName}</span>
-               <span className="text-xs font-mono text-yellow-500">MK-{stage+1}</span>
-             </div>
-             
-             <div className="flex-grow flex items-center justify-center relative">
-               <div className={`absolute inset-0 rounded-full blur-3xl opacity-20 ${playerClass.bg}`}></div>
-               <div className={`w-40 h-40 transition-all duration-700 transform ${stage > 0 ? 'scale-110' : 'scale-100'} ${stage > 1 ? 'drop-shadow-[0_0_15px_rgba(255,255,255,0.5)]' : ''}`}>
-                  <playerClass.Weapon level={stage+1} />
-               </div>
-             </div>
-
-             <div className="mt-auto">
-               <div className="flex justify-between text-sm mb-1 text-slate-400">
-                 <span>Energy Output</span>
-                 <span className="text-white font-mono">{power} MW</span>
-               </div>
-               <div className="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
-                 <div className={`h-full ${playerClass.bg.replace('/80','')} transition-all duration-1000`} style={{width: `${(power/220)*100}%`}}></div>
-               </div>
-             </div>
-           </div>
-        </div>
-
-        {/* Upgrade Steps */}
-        <div className="flex-1 space-y-4 w-full max-w-md">
-          {stage < 3 ? (
-             <div className="bg-slate-800 p-6 rounded-2xl border border-slate-600">
-               <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-                 <BrainCircuit className="text-cyan-400"/> 升級階段 {stage + 1}/3
-               </h3>
-               <p className="text-slate-300 mb-6">{upgradeSteps[stage].name}</p>
-               <button 
-                 onClick={startUpgrade}
-                 className={`w-full py-4 rounded-xl font-bold text-lg text-white shadow-lg transition-transform hover:scale-105 active:scale-95 ${playerClass.btnBg}`}
-               >
-                 開始升級程序
-               </button>
-             </div>
-          ) : (
-            <div className="bg-green-900/40 p-6 rounded-2xl border border-green-500 text-center animate-bounce-in">
-               <h3 className="text-2xl font-bold text-green-400 mb-2">研發完成！</h3>
-               <p className="text-slate-300 mb-6">最終戰鬥力: {power} (影響BOSS戰傷害)</p>
-               <button 
-                 onClick={() => onComplete({ strength: power, level: 3, perfectCount: perfectCount })} 
-                 className="w-full py-4 rounded-xl font-bold text-lg bg-white text-slate-900 hover:bg-slate-200 shadow-lg"
-               >
-                 前往戰場
-               </button>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Challenge Modal */}
-      {modalOpen && currentQ && (
-        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
-          <div className="bg-slate-900 border-2 border-slate-600 rounded-2xl p-8 max-w-2xl w-full shadow-2xl animate-zoom-in">
-             {!feedback ? (
-               <>
-                 <h3 className="text-yellow-400 font-mono font-bold mb-6 flex items-center gap-2">
-                   <AlertTriangle size={20}/> 技術檢測中...
-                 </h3>
-                 <p className="text-xl font-bold text-white mb-8">{currentQ.q}</p>
-                 <div className="grid grid-cols-1 gap-4">
-                   {currentQ.options.map((opt, i) => (
-                     <button 
-                       key={i} 
-                       onClick={() => handleAnswer(opt.correct)}
-                       className="p-4 bg-slate-800 hover:bg-slate-700 border border-slate-600 hover:border-white rounded-xl text-left font-bold text-slate-200 transition-colors"
-                     >
-                       {opt.text}
-                     </button>
-                   ))}
-                 </div>
-                 <TAS_Hint hintText={currentQ.hint} />
-               </>
-             ) : (
-               <div className="text-center py-8">
-                 {feedback.correct ? <CheckCircle size={60} className="mx-auto text-green-500 mb-4"/> : <XCircle size={60} className="mx-auto text-red-500 mb-4"/>}
-                 <h3 className={`text-2xl font-bold mb-2 ${feedback.correct ? 'text-green-400' : 'text-red-400'}`}>{feedback.msg}</h3>
-                 <p className="text-slate-400 font-mono text-xl">+ {feedback.gain} PWR</p>
-                 <div className="mt-4 text-sm text-slate-500">{currentQ.reason}</div>
-               </div>
-             )}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-};
-
-// --- Level 3: Boss Battle ---
-
-const BossIntro = ({ playerClass, weaponStats, onStartBattle }) => {
-  return (
-    <div className="text-center animate-pulse-slow max-w-lg mx-auto mt-16 p-8 relative">
-      <div className="absolute inset-0 bg-red-500/10 blur-3xl rounded-full"></div>
-      <div className="w-40 h-40 mx-auto mb-6 relative">
-         <div className="absolute inset-0 bg-red-600 blur-xl rounded-full opacity-50"></div>
-         <div className="w-full h-full rounded-full border-4 border-red-500 relative z-10 bg-slate-900 overflow-hidden">
-           <AvatarBoss />
-         </div>
-      </div>
-      
-      <h2 className="text-5xl font-black text-red-500 mb-4 tracking-tighter relative z-10">BOSS WARNING</h2>
-      <p className="text-2xl text-slate-200 mb-8 font-bold relative z-10">
-        <span className="text-red-400">短路博士</span> 正在吸收全城電力！
-      </p>
-      <div className="bg-slate-900/90 p-8 rounded-2xl border border-red-900/50 mb-10 backdrop-blur-md relative z-10 shadow-2xl">
-        <div className="flex items-center gap-4 mb-4 pb-4 border-b border-white/10">
-          <div className="w-16 h-16 rounded-lg border-2 border-slate-600 bg-slate-800 overflow-hidden">
-            <playerClass.Avatar />
-          </div>
-          <div className="text-left">
-            <div className="text-xs text-slate-400">已裝備武器</div>
-            <div className={`text-xl font-bold ${playerClass.color}`}>{playerClass.weaponName}</div>
-          </div>
-          <div className="ml-auto font-mono text-yellow-500 font-bold text-xl">PWR: {weaponStats.strength}</div>
-        </div>
-        <div className="flex items-center gap-3 bg-blue-900/30 p-4 rounded-xl border border-blue-500/50 mb-4 text-left">
-           <Shield size={32} className="text-blue-400 flex-shrink-0" />
-           <div>
-             <div className="font-bold text-blue-300">戰術防禦系統</div>
-             <div className="text-sm text-slate-400">你擁有一次性「手動防禦罩」。戰鬥中請點擊右上角按鈕，在關鍵時刻抵擋 Boss 的攻擊。</div>
-           </div>
-        </div>
-        <div className="flex items-center gap-3 bg-cyan-900/30 p-4 rounded-xl border border-cyan-500/50 mb-4 text-left">
-           <ZapOff size={32} className="text-cyan-400 flex-shrink-0" />
-           <div>
-             <div className="font-bold text-cyan-300">電磁脈衝 (EMP)</div>
-             <div className="text-sm text-slate-400">可發射 EMP 癱瘓 Boss 一回合，使其無法攻擊。每場限用一次。</div>
-           </div>
-        </div>
-        <p className="text-slate-300 text-sm">
-          <span className="text-yellow-400">機率提示：</span>雙方都有 <span className="text-yellow-400">10%</span> 機率自動迴避攻擊。
-        </p>
-      </div>
-      <button 
-        onClick={onStartBattle} 
-        className="relative z-10 bg-red-600 hover:bg-red-500 text-white font-black py-4 px-16 rounded-full text-2xl shadow-[0_0_40px_rgba(220,38,38,0.6)] transition-all hover:scale-110 hover:-translate-y-1"
-      >
-        FIGHT
-      </button>
-    </div>
-  );
-};
-
-const BossBattle = ({ player, playerClass, weaponStats, getQuestions, onWin, onLose }) => {
-  const [currentBoss, setCurrentBoss] = useState('normal'); // 'normal' | 'hidden'
-  const [bossHp, setBossHp] = useState(500); 
-  const [playerHp, setPlayerHp] = useState(player.maxHp);
-  const [combatLog, setCombatLog] = useState(['戰鬥開始！短路博士 釋放了高壓電場...']);
-  const [questionPhase, setQuestionPhase] = useState(true);
-  const [currentQ, setCurrentQ] = useState(null);
-  
-  // Tactical Skills
-  const [shield, setShield] = useState(1);
-  const [shieldPrimed, setShieldPrimed] = useState(false);
-  const [emp, setEmp] = useState(1);
-  const [empActive, setEmpActive] = useState(false); // If active, Boss skips next turn
-  
-  const [bossAttackCount, setBossAttackCount] = useState(0);
-  
-  // Ultimate Skill State
-  const [ultimateUsed, setUltimateUsed] = useState(false);
-  
-  // Visual Effects State
-  const [shake, setShake] = useState(false); 
-  const [flash, setFlash] = useState(false); 
-  const [floatingText, setFloatingText] = useState(null); 
-
-  useEffect(() => {
-    if (questionPhase) {
-      const qs = getQuestions(1);
-      if (qs.length > 0) {
-        setCurrentQ(qs[0]);
-      } else {
-        setCurrentQ({ q: "能量耗盡...最後一擊！電的單位是？", options: [{text:"Ampere", correct:true}, {text:"Liter", correct:false}, {text:"Kg", correct:false}], reason:"...", hint: "提示：電流的單位以 A 開頭。" });
-      }
-    }
-  }, [questionPhase, getQuestions]);
-
-  const activateShield = () => {
-    if (shield > 0) {
-      setShield(0);
-      setShieldPrimed(true);
-      setCombatLog(prev => [`[系統]: 防禦罩已啟動！準備抵擋下一次攻擊！`, ...prev]);
-    }
-  };
-
-  const useEmp = () => {
-    if (emp > 0) {
-      setEmp(0);
-      setEmpActive(true);
-      setCombatLog(prev => [`[系統]: 發射電磁脈衝 (EMP)！Boss 系統癱瘓，下回合無法攻擊！`, ...prev]);
-      showFloatingText("EMP!", "text-cyan-400 font-black");
-      // Immediately go to next question since boss is stunned
-      // But we need to wait a bit for effect
-      setTimeout(() => {
-         setQuestionPhase(true); 
-      }, 1500);
-    }
-  };
-
-  const useUltimate = () => {
-    if (ultimateUsed) return;
-    setUltimateUsed(true);
-    setQuestionPhase(false); // Skip quiz phase for this turn
-
-    const dmg = 100;
-    triggerDamageEffect();
-    showFloatingText("ULTIMATE!", "text-purple-400 font-black text-5xl");
-    setTimeout(() => showFloatingText(`-${dmg}`, "text-yellow-400 text-4xl"), 800);
-
-    setCombatLog(prev => [`[你]: 發動必殺技【${playerClass.ultimateName}】！造成 ${dmg} 點真實傷害！`, ...prev]);
-    
-    setBossHp(h => {
-        const newHp = h - dmg;
-        if (newHp <= 0) handleBossDefeat(newHp);
-        return Math.max(0, newHp);
-    });
-
-    if (bossHp - dmg > 0) {
-        setTimeout(() => {
-            setQuestionPhase(true); 
-            setCombatLog(prev => [`[系統]: Boss 受到必殺技重創，暫時無法行動！`, ...prev]);
-        }, 2500);
-    }
-  };
-
-  const showFloatingText = (text, color) => {
-    setFloatingText({ text, color, id: Date.now() });
-    setTimeout(() => setFloatingText(null), 1000);
-  };
-
-  const triggerDamageEffect = () => {
-    setShake(true);
-    setFlash(true);
-    setTimeout(() => { setShake(false); setFlash(false); }, 300);
-  };
-
-  const handleBossDefeat = (hp) => {
-      if (hp <= 0) {
-          if (currentBoss === 'normal' && weaponStats.perfectCount === 3) {
-              // Transition to Hidden Boss
-              setTimeout(() => {
-                  setCurrentBoss('hidden');
-                  setBossHp(1000);
-                  setBossAttackCount(0);
-                  setShield(1); // Reset Skills for part 2
-                  setEmp(1);
-                  setUltimateUsed(false); // Allow Ultimate only in part 2 if not used? Or reset it? 
-                  // Resetting ultimate for Part 2 is fair as it's a new boss
-                  
-                  setCombatLog(prev => [`⚠️ 警告：偵測到更強大的能量反應！`, `[超載大帝]: 凡人... 竟敢挑戰我！`, ...prev]);
-                  showFloatingText("WARNING!", "text-red-600 font-black text-5xl");
-                  setQuestionPhase(true); 
-              }, 1500);
-          } else {
-              setTimeout(onWin, 1500);
+        const CLASSES = [
+          {
+            id: 'engineer',
+            name: '機甲工程師',
+            roleType: 'Magnetic',
+            Avatar: AvatarEngineer,
+            Weapon: WeaponRailgun,
+            weaponName: '超電磁加農砲',
+            ultimateName: '量子軌道轟炸', 
+            desc: '操控「磁效應」的大師。利用線圈和鐵芯，產生強大的磁力衝擊。',
+            color: 'text-cyan-400',
+            borderColor: 'border-cyan-500',
+            bg: 'bg-cyan-950/80',
+            btnBg: 'bg-cyan-600 hover:bg-cyan-500',
+            partName: '超導線圈',
+            partIcon: <Magnet size={32} />,
+            activeColor: 'cyan'
+          },
+          {
+            id: 'mage',
+            name: '火炎法師',
+            roleType: 'Thermal',
+            Avatar: AvatarMage,
+            Weapon: WeaponStaff,
+            weaponName: '高熱離子法杖',
+            ultimateName: '末日高熱雷劫',
+            desc: '精通「熱效應」的奧秘。利用高電阻發熱線，釋放灼熱的能量。',
+            color: 'text-orange-400',
+            borderColor: 'border-orange-500',
+            bg: 'bg-orange-950/80',
+            btnBg: 'bg-orange-600 hover:bg-orange-500',
+            partName: '高阻發熱絲',
+            partIcon: <Flame size={32} />,
+            activeColor: 'orange'
+          },
+          {
+            id: 'warrior',
+            name: '光能戰士',
+            roleType: 'Luminous',
+            Avatar: AvatarWarrior,
+            Weapon: WeaponSaber,
+            weaponName: '光子雷射劍',
+            ultimateName: '超光子爆裂斬',
+            desc: '駕馭「光效應」的力量。利用 LED 晶體匯聚光束，斬斷黑暗。',
+            color: 'text-yellow-400',
+            borderColor: 'border-yellow-500',
+            bg: 'bg-yellow-950/80',
+            btnBg: 'bg-yellow-600 hover:bg-yellow-500',
+            partName: '聚光 LED 晶體',
+            partIcon: <Lightbulb size={32} />,
+            activeColor: 'yellow'
           }
-      }
-  };
+        ];
 
-  const bossTurn = () => {
-        if (bossHp <= 0) return;
+        const TREASURES = [
+          { type: 'Magnetic', name: '超導線圈組件', desc: '蘊含強大磁場潛力的精密線圈。', icon: <Magnet size={64} className="text-cyan-400" /> },
+          { type: 'Thermal', name: '高阻發熱核心', desc: '能瞬間產生極高溫度的核心材料。', icon: <Flame size={64} className="text-orange-400" /> },
+          { type: 'Luminous', name: '光子聚合晶體', desc: '能夠將電能高效率轉化為純淨光束。', icon: <Lightbulb size={64} className="text-yellow-400" /> }
+        ];
 
-        // 0. Check EMP Stun
-        if (empActive) {
-           setCombatLog(prev => [`[系統]: Boss 處於 EMP 癱瘓狀態，無法攻擊！`, ...prev]);
-           showFloatingText("STUNNED", "text-cyan-400");
-           setEmpActive(false); // Consumed
-           setTimeout(() => setQuestionPhase(true), 2000);
-           return;
-        }
+        const MASTER_QUESTION_POOL = [
+          { id: 1, q: "電飯煲主要利用電流的什麼效應來煮飯？", options: [{ text: "熱效應", correct: true }, { text: "磁效應", correct: false }, { text: "光效應", correct: false }], reason: "電飯煲內的發熱線會產生熱能煮食。", hint: "分析：電飯煲的目的是「煮熟」食物，這需要高溫。請思考哪種效應能產生熱量。" },
+          { id: 2, q: "廢鐵處理場的起重機利用什麼來吸起廢鐵？", options: [{ text: "巨大的磁石", correct: false }, { text: "電磁鐵", correct: true }, { text: "吸塵機", correct: false }], reason: "電磁鐵通電有磁，斷電無磁，方便控制。", hint: "分析：起重機需要「吸起」也要能隨時「放下」廢鐵。永久磁鐵無法關閉磁力。" },
+          { id: 3, q: "以下哪種電器同時應用了「熱效應」和「磁效應」？", options: [{ text: "LED 燈", correct: false }, { text: "電暖爐", correct: false }, { text: "風筒 (吹風機)", correct: true }], reason: "風筒有發熱線產生熱，也有馬達產生風。", hint: "分析：這個電器既要能吹出風（需要馬達轉動），又要能吹出暖氣（需要發熱）。" },
+          { id: 4, q: "增加電磁鐵線圈的圈數，磁力會怎樣？", options: [{ text: "變強", correct: true }, { text: "變弱", correct: false }, { text: "不變", correct: false }], reason: "線圈越密，磁場越強。", hint: "數據庫檢索：電磁鐵的磁力與電流大小及線圈密度成正比。" },
+          { id: 5, q: "為什麼我們不應該用濕手觸摸電掣？", options: [{ text: "會弄髒電掣", correct: false }, { text: "自來水是電導體，容易觸電", correct: true }, { text: "開關會失靈", correct: false }], reason: "一般的水含有雜質，是可以導電的。", hint: "安全警告：自來水並非純水，水中含有礦物質，使其成為導體。" },
+          { id: 6, q: "以下哪種物料是絕緣體（Insulator）？", options: [{ text: "銅線", correct: false }, { text: "鐵釘", correct: false }, { text: "橡膠手套", correct: true }], reason: "橡膠不易讓電流通過，常用作保護層。", hint: "分析：我們需要找出一種「不容易」讓電通過的材料，常用於包裹電線。" },
+          { id: 7, q: "電熨斗（燙斗）運作時，是將電能轉換成什麼？", options: [{ text: "聲能", correct: false }, { text: "熱能", correct: true }, { text: "動能", correct: false }], reason: "電熨斗利用發熱板產生高溫。", hint: "觀察：使用電熨斗時，底板會變得非常燙，這是為了撫平衣物。" },
+          { id: 8, q: "電磁鐵相對於永久磁鐵的一個主要優點是什麼？", options: [{ text: "磁力永遠不變", correct: false }, { text: "可以控制磁力的開關", correct: true }, { text: "比較輕", correct: false }], reason: "通電有磁，斷電無磁是其最大特性。", hint: "比較：永久磁鐵的磁力一直存在，但電磁鐵可以透過切斷電源來消除磁力。" },
+          { id: 9, q: "購買電器時，能源標籤上的一級代表什麼？", options: [{ text: "最慳電（能源效益最高）", correct: true }, { text: "最耗電", correct: false }, { text: "價格最貴", correct: false }], reason: "1級最慳電，5級最耗電。", hint: "環保數據：綠色的一級標籤代表能源效益最高。" },
+          { id: 10, q: "電風扇轉動時，主要將電能轉換成什麼？", options: [{ text: "光能", correct: false }, { text: "動能", correct: true }, { text: "化學能", correct: false }], reason: "馬達轉動扇葉，產生動能。", hint: "物理分析：扇葉在「移動」和「旋轉」，這屬於機械運動。" },
+          { id: 11, q: "如果電線的絕緣外層破損了，應該怎麼做？", options: [{ text: "用膠紙黏好繼續用", correct: false }, { text: "立即停止使用並更換", correct: true }, { text: "小心避開破損處即可", correct: false }], reason: "破損電線極易引致漏電或火災。", hint: "安全協議：破損的絕緣層會導致漏電風險，必須立即採取最安全的措施。" },
+          { id: 12, q: "以下哪個是能夠導電的非金屬？", options: [{ text: "木頭", correct: false }, { text: "石墨 (鉛筆芯)", correct: true }, { text: "玻璃", correct: false }], reason: "石墨是少數能導電的非金屬。", hint: "特例分析：雖然大多數非金屬是絕緣體，但鉛筆芯的主要成分是碳的一種形式，可以導電。" },
+          { id: 13, q: "電鈴 (Electric Bell) 能夠發聲，是因為裡面有什麼裝置？", options: [{ text: "電磁鐵", correct: true }, { text: "發熱線", correct: false }, { text: "LED 燈", correct: false }], reason: "電磁鐵吸引小鎚敲擊鈴蓋。", hint: "構造分析：電鈴需要一個裝置來快速吸引和釋放小鎚子去敲擊鈴聲。" },
+          { id: 14, q: "要想增強電磁鐵的磁力，除了增加線圈，還可以？", options: [{ text: "減少電池數量", correct: false }, { text: "增加串聯電池數量", correct: true }, { text: "將鐵芯換成木棒", correct: false }], reason: "增加電池（串聯）可增加電流，增強磁力。", hint: "能量公式：磁力與電流大小有關。串聯更多電池可以提供更大的電壓和電流。" }
+        ];
 
-        // 1. Check Shield
-        if (shieldPrimed) {
-           setCombatLog(prev => [`[系統]: 防禦罩發揮作用！完全抵擋了 Boss 的高壓電擊！`, ...prev]);
-           setShieldPrimed(false); 
-           showFloatingText("BLOCKED", "text-blue-400");
-           setTimeout(() => setQuestionPhase(true), 2000);
-           return;
-        }
+        // --- 內建 AI 提示組件 ---
+        function TAS_Hint({ hintText }) {
+          const [show, setShow] = useState(false);
+          const [loading, setLoading] = useState(false);
 
-        // 2. Check Player Evasion (10%)
-        const playerEvade = Math.random() < 0.1;
+          const handleAnalyze = () => {
+            if (show) return;
+            setLoading(true);
+            setTimeout(() => {
+              setLoading(false);
+              setShow(true);
+            }, 800);
+          };
 
-        if (playerEvade) {
-           showFloatingText("迴避!", "text-green-400");
-           setCombatLog(prev => [`[你]: 極限反應！成功迴避了 Boss 的攻擊！`, ...prev]);
-           setTimeout(() => setQuestionPhase(true), 2000);
-        } else {
-           // 3. Take Damage
-           let bossDmg = 35;
-           let attackMsg = "嘗嘗這個高壓電擊！";
-
-           if (currentBoss === 'hidden') {
-             const nextAttackCount = bossAttackCount + 1;
-             setBossAttackCount(nextAttackCount);
-             
-             if (nextAttackCount % 4 === 0) {
-               bossDmg = 50;
-               attackMsg = "絕緣崩壞！虛空雷擊！";
-               showFloatingText("ULTIMATE!", "text-purple-500 font-black");
-             }
-           }
-
-           triggerDamageEffect();
-           showFloatingText(`-${bossDmg}`, "text-red-500");
-           setCombatLog(prev => [`[${currentBoss === 'hidden' ? '超載大帝' : '短路博士'}]: ${attackMsg} (-${bossDmg})`, ...prev]);
-           setPlayerHp(h => {
-             const newHp = h - bossDmg;
-             if (newHp <= 0) setTimeout(onLose, 1500);
-             return Math.max(0, newHp);
-           });
-           
-           if (playerHp > 0) {
-             setTimeout(() => setQuestionPhase(true), 2000);
-           }
-        }
-  };
-
-  const handleAttack = (correct) => {
-    setQuestionPhase(false);
-    
-    if (correct) {
-      const bossEvade = Math.random() < 0.1;
-
-      if (bossEvade) {
-        showFloatingText("MISS", "text-slate-400");
-        setCombatLog(prev => [`[Boss]: 高速閃避！你的攻擊落空了！`, ...prev]);
-      } else {
-        const baseDmg = weaponStats.strength > 200 ? 40 : 20; 
-        const dmg = Math.floor(weaponStats.strength * 0.9) + baseDmg + Math.floor(Math.random() * 20);
-        
-        let attackDesc = "";
-        if (playerClass.id === 'engineer') attackDesc = `發射磁力砲！`;
-        if (playerClass.id === 'mage') attackDesc = `釋放離子流！`;
-        if (playerClass.id === 'warrior') attackDesc = `揮動雷射劍！`;
-
-        triggerDamageEffect();
-        showFloatingText(`-${dmg}`, "text-yellow-400");
-        setCombatLog(prev => [`[你]: ${attackDesc} (-${dmg})`, ...prev]);
-        setBossHp(h => {
-          const newHp = h - dmg;
-          if (newHp <= 0) handleBossDefeat(newHp);
-          return Math.max(0, newHp);
-        });
-      }
-    } else {
-      setCombatLog(prev => [`[系統]: 知識連結失敗... 攻擊無效！`, ...prev]);
-    }
-
-    if (bossHp > 0) { // Simple check, exact handling in bossTurn
-      setTimeout(bossTurn, 1500);
-    }
-  };
-
-  const getBattleAdvice = () => {
-    if (playerHp < 70 && shield > 0 && !shieldPrimed) return "警報：生命值危急！建議立即啟動防禦罩！";
-    if (emp > 0 && currentBoss === 'hidden' && (bossAttackCount + 1) % 4 === 0) return "危險：Boss 即將發動大絕！建議使用 EMP 干擾！";
-    if (shieldPrimed) return "狀態：防禦罩運作中。請專注攻擊。";
-    if (empActive) return "狀態：Boss 已癱瘓。全力輸出！";
-    return "建議：觀察 Boss 攻擊頻率，保留技能以備不時之需。";
-  };
-
-  return (
-    <div className={`max-w-5xl mx-auto w-full animate-fade-in p-4 ${shake ? 'animate-shake' : ''}`}>
-      {/* Damage Flash Overlay */}
-      {flash && <div className="absolute inset-0 bg-red-500/20 z-50 pointer-events-none animate-ping"></div>}
-
-      <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-8 relative">
-        {/* Player */}
-        <div className="text-center relative z-10 order-2 md:order-1 group">
-          <div className="relative inline-block">
-             <div className={`w-32 h-32 rounded-full border-4 ${playerClass.borderColor} flex items-center justify-center mb-4 mx-auto shadow-lg transform hover:scale-105 transition-transform overflow-hidden bg-slate-900`}>
-               <playerClass.Avatar />
-             </div>
-             {shieldPrimed && (
-               <div className="absolute -inset-2 border-4 border-blue-400 rounded-full animate-pulse opacity-50"></div>
-             )}
-             {shieldPrimed && (
-                <div className="absolute -top-2 -right-2 bg-blue-500 rounded-full p-2 shadow-lg z-20">
-                  <Shield size={20} className="text-white fill-blue-500" />
+          return (
+            <div className="mt-4">
+              {!show && !loading && (
+                <button 
+                  onClick={handleAnalyze}
+                  className="flex items-center gap-2 text-xs font-mono text-cyan-400 border border-cyan-500/50 bg-cyan-900/20 px-3 py-2 rounded-lg hover:bg-cyan-900/40 transition-colors mx-auto"
+                >
+                  <Sparkles size={14} /> T.A.S. 戰術分析
+                </button>
+              )}
+              
+              {loading && (
+                <div className="text-xs font-mono text-cyan-400 animate-pulse flex items-center justify-center gap-2">
+                  <Activity size={14} className="animate-spin" /> 分析運算中...
                 </div>
-             )}
-             {/* Floating Text Player */}
-             {floatingText && floatingText.color.includes('green') && (
-               <div className={`absolute top-0 left-1/2 -translate-x-1/2 -translate-y-10 text-3xl font-black ${floatingText.color} animate-bounce z-50 drop-shadow-lg`}>
-                 {floatingText.text}
-               </div>
-             )}
-             {floatingText && floatingText.color.includes('red') && (
-               <div className={`absolute top-0 left-1/2 -translate-x-1/2 -translate-y-10 text-4xl font-black ${floatingText.color} animate-ping z-50 drop-shadow-lg`}>
-                 {floatingText.text}
-               </div>
-             )}
-             {floatingText && floatingText.color.includes('blue') && (
-               <div className={`absolute top-0 left-1/2 -translate-x-1/2 -translate-y-10 text-2xl font-black ${floatingText.color} animate-pulse z-50 drop-shadow-lg`}>
-                 {floatingText.text}
-               </div>
-             )}
-          </div>
-          <div className="bg-slate-800 rounded-full h-6 w-40 mx-auto overflow-hidden border border-slate-600 relative">
-             <div className="absolute inset-0 flex items-center justify-center text-[10px] font-bold z-10 text-white">{playerHp}/{player.maxHp}</div>
-            <div className={`h-full transition-all duration-500 ${playerHp < 50 ? 'bg-red-500 animate-pulse' : 'bg-green-500'}`} style={{width: `${(playerHp/player.maxHp)*100}%`}}></div>
-          </div>
-          <p className={`font-bold mt-2 text-xl ${playerClass.color}`}>{player.name}</p>
-        </div>
+              )}
 
-        <div className="order-1 md:order-2 text-7xl font-black text-slate-800 italic opacity-50 select-none animate-pulse">VS</div>
-
-        {/* Boss */}
-        <div className="text-center relative z-10 order-3">
-          <div className={`w-32 h-32 rounded-full border-4 ${currentBoss === 'hidden' ? 'border-purple-500 shadow-[0_0_30px_rgba(168,85,247,0.5)]' : 'border-red-500'} flex items-center justify-center mb-4 mx-auto shadow-lg animate-bounce-slow overflow-hidden bg-slate-900`}>
-            {currentBoss === 'hidden' ? <AvatarUltimateBoss /> : <AvatarBoss />}
-          </div>
-          {/* Floating Text Boss */}
-          {floatingText && floatingText.color.includes('yellow') && (
-               <div className={`absolute top-0 left-1/2 -translate-x-1/2 -translate-y-10 text-4xl font-black ${floatingText.color} animate-ping z-50 drop-shadow-lg`}>
-                 {floatingText.text}
-               </div>
-          )}
-          {floatingText && floatingText.color.includes('purple') && (
-               <div className={`absolute top-0 left-1/2 -translate-x-1/2 -translate-y-10 text-4xl font-black ${floatingText.color} animate-ping z-50 drop-shadow-lg`}>
-                 {floatingText.text}
-               </div>
-          )}
-          {floatingText && floatingText.color.includes('slate') && (
-               <div className={`absolute top-0 left-1/2 -translate-x-1/2 -translate-y-10 text-3xl font-black ${floatingText.color} animate-bounce z-50 drop-shadow-lg`}>
-                 {floatingText.text}
-               </div>
-          )}
-          {floatingText && floatingText.color.includes('cyan') && (
-               <div className={`absolute top-0 left-1/2 -translate-x-1/2 -translate-y-10 text-3xl font-black ${floatingText.color} animate-shake z-50 drop-shadow-lg`}>
-                 {floatingText.text}
-               </div>
-          )}
-
-          <div className="bg-slate-800 rounded-full h-6 w-40 mx-auto overflow-hidden border border-slate-600 relative">
-             <div className="absolute inset-0 flex items-center justify-center text-[10px] font-bold z-10 text-white">{bossHp}</div>
-            <div className={`h-full transition-all duration-500 ${currentBoss === 'hidden' ? 'bg-purple-600' : 'bg-red-600'}`} style={{width: `${(bossHp/(currentBoss === 'hidden' ? 1000 : 500))*100}%`}}></div>
-          </div>
-          <p className={`font-bold mt-2 text-xl ${currentBoss === 'hidden' ? 'text-purple-400' : 'text-red-400'}`}>
-            {currentBoss === 'hidden' ? '超載大帝' : '短路博士'}
-          </p>
-        </div>
-      </div>
-
-      <div className="bg-slate-900 border-t-4 border-slate-700 rounded-2xl shadow-2xl min-h-[300px] flex flex-col relative overflow-hidden">
-        <div className={`absolute top-0 left-0 w-full h-1 ${playerClass.bg.replace('/80', '')}`}></div>
-
-        {questionPhase && currentQ ? (
-          <div className="flex-grow flex flex-col items-center justify-center p-8 space-y-8 animate-in slide-in-from-bottom-10 fade-in duration-300 relative w-full">
-            
-            {/* Manual Skills Buttons */}
-            <div className="absolute top-4 right-4 flex gap-2">
-                {emp > 0 && !empActive && (
-                    <button 
-                      onClick={useEmp}
-                      className="bg-cyan-600 hover:bg-cyan-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 shadow-lg animate-bounce border border-cyan-400 transition-all hover:scale-105"
-                      title="癱瘓 Boss 一回合"
-                    >
-                      <ZapOff size={20} /> EMP (1/1)
-                    </button>
-                )}
-                {shield > 0 && !shieldPrimed && (
-                    <button 
-                      onClick={activateShield}
-                      className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 shadow-lg animate-bounce border border-blue-400 transition-all hover:scale-105"
-                      title="抵擋一次傷害"
-                    >
-                      <Shield size={20} /> 防禦 (1/1)
-                    </button>
-                )}
+              {show && (
+                <div className="bg-cyan-950/50 border-l-2 border-cyan-500 p-3 rounded-r-lg text-left animate-in slide-in-from-left-2 fade-in">
+                  <div className="flex items-center gap-2 text-cyan-400 font-bold text-xs mb-1">
+                    <BrainCircuit size={14} /> 分析結果：
+                  </div>
+                  <p className="text-slate-300 text-sm leading-relaxed">{hintText}</p>
+                </div>
+              )}
             </div>
+          );
+        }
 
-            {/* Status Indicators */}
-            <div className="absolute top-4 right-4 flex gap-2 pointer-events-none">
-                {empActive && (
-                     <div className="bg-cyan-900/80 border border-cyan-400 text-cyan-200 px-4 py-2 rounded-lg flex items-center gap-2 backdrop-blur-sm">
-                        <ZapOff size={20} /> Boss 癱瘓中
-                    </div>
-                )}
-                {shieldPrimed && (
-                     <div className="bg-blue-900/80 border border-blue-400 text-blue-200 px-4 py-2 rounded-lg flex items-center gap-2 backdrop-blur-sm">
-                        <Shield size={20} /> 防禦罩待命
-                    </div>
-                )}
-            </div>
+        // --- Screens ---
 
-            {/* Ultimate Skill Button - Only for Hidden Boss */}
-            {currentBoss === 'hidden' && !ultimateUsed && (
-                <button 
-                  onClick={useUltimate}
-                  className="absolute top-4 left-4 bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-500 hover:to-orange-500 text-white px-6 py-3 rounded-xl flex items-center gap-2 shadow-[0_0_20px_rgba(234,179,8,0.5)] animate-pulse font-bold text-lg border-2 border-yellow-300 z-10"
-                >
-                  <Star size={24} className="fill-yellow-200" /> 
-                  必殺技：{playerClass.ultimateName}
-                </button>
-            )}
-
-            {/* AI Battle Analysis Bar */}
-            <div className="w-full max-w-3xl bg-slate-800/50 border border-slate-600 rounded-lg p-2 flex items-center gap-2 text-xs md:text-sm text-slate-300 mt-12 md:mt-0">
-               <Activity size={16} className="text-green-400 animate-pulse" />
-               <span className="font-mono text-green-400 font-bold">T.A.S.</span>
-               <span>{getBattleAdvice()}</span>
-            </div>
-
-            <div className="text-yellow-400 font-bold font-mono tracking-widest text-sm bg-yellow-900/20 px-4 py-1 rounded-full border border-yellow-500/30">
-              武器充能程序啟動
-            </div>
-            <h3 className="text-2xl md:text-3xl font-bold text-center text-slate-100">{currentQ.q}</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-3xl">
-              {currentQ.options.map((opt, idx) => (
-                <button 
-                  key={idx}
-                  onClick={() => handleAttack(opt.correct)}
-                  className="bg-slate-800 hover:bg-slate-700 border-2 border-slate-700 hover:border-white p-6 rounded-xl text-lg font-bold transition-all hover:-translate-y-1 hover:shadow-lg text-slate-200"
-                >
-                  {opt.text}
-                </button>
-              ))}
-            </div>
-            {/* Hint in Battle */}
-            <TAS_Hint hintText={currentQ.hint} />
-          </div>
-        ) : (
-          <div className="flex-grow font-mono text-sm md:text-base space-y-3 p-6 h-64 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent">
-            {combatLog.map((log, i) => (
-              <div key={i} className={`p-3 rounded-lg border-l-4 animate-in fade-in slide-in-from-left-2 ${log.includes('[你]') ? 'border-green-500 bg-green-900/20' : log.includes('大帝') || log.includes('博士') ? 'border-red-500 bg-red-900/20' : log.includes('[系統]') ? 'border-blue-500 bg-blue-900/20' : log.includes('閃避') ? 'border-slate-500 bg-slate-800/80 text-slate-300' : 'border-slate-500 bg-slate-800/50'}`}>
-                {log}
+        function StartScreen({ onStart }) {
+          const [name, setName] = useState('');
+          
+          return (
+            <div className="text-center space-y-8 animate-fade-in-up">
+              <div className="relative inline-block group">
+                <div className="absolute inset-0 bg-cyan-500 blur-3xl opacity-20 animate-pulse"></div>
+                <div className="w-40 h-40 mx-auto bg-slate-900 rounded-full border-4 border-cyan-500 flex items-center justify-center shadow-[0_0_50px_rgba(6,182,212,0.3)]">
+                   <Zap size={80} className="text-cyan-400 group-hover:scale-110 transition-transform duration-500" />
+                </div>
               </div>
-            ))}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-};
+              
+              <div>
+                <h1 className="text-5xl md:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 tracking-tight pb-2">
+                  電之特工隊
+                </h1>
+                <h2 className="text-2xl text-cyan-200 mt-2 font-light tracking-widest uppercase">RPG 像素戰記</h2>
+              </div>
 
-const VictoryScreen = ({ player, playerClass, weaponStats, onReset }) => (
-  <div className="text-center animate-zoom-in space-y-8 py-12">
-    <div className="relative inline-block">
-      <Trophy size={120} className="text-yellow-400 mx-auto drop-shadow-[0_0_30px_rgba(250,204,21,0.6)]" />
-      <div className="absolute inset-0 bg-yellow-400 blur-3xl opacity-20"></div>
-    </div>
-    <h2 className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-orange-500">任務完成！</h2>
-    <div className="text-xl text-slate-300">
-      <span className={`${playerClass.color} font-bold`}>{player.name}</span>，你成功拯救了能源核心！<br/>
-      {weaponStats.perfectCount === 3 ? (
-        <span className="text-purple-400 font-bold block mt-2 text-lg">✨ 傳奇成就：擊敗隱藏魔王 ✨</span>
-      ) : (
-        <span className="text-slate-500 text-sm">提示：試著在升級階段全對，挑戰更強的敵人...</span>
-      )}
-    </div>
-    <button onClick={onReset} className="inline-flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-white font-bold py-3 px-8 rounded-full transition-all mt-8 border border-slate-600">
-      <RotateCcw size={20} /> 返回總部
-    </button>
-  </div>
-);
+              <div className="max-w-md mx-auto bg-slate-900/80 p-8 rounded-2xl border border-cyan-800 shadow-[0_0_50px_rgba(8,145,178,0.1)] backdrop-blur-md">
+                <div className="mb-6 flex items-center justify-center gap-2 text-cyan-300 text-sm font-mono bg-cyan-900/30 p-2 rounded-lg border border-cyan-700/50">
+                  <BrainCircuit size={16} /> 戰術分析系統 (T.A.S.) 已連線
+                </div>
+                <p className="text-slate-400 mb-6 text-lg">輸入你的特工代號，準備覺醒你的能量屬性...</p>
+                <input 
+                  type="text" 
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="輸入代號 (例如: 小強)" 
+                  className="w-full bg-slate-800 border-2 border-slate-700 focus:border-cyan-500 rounded-lg px-4 py-4 text-center text-2xl text-white outline-none transition-all mb-4 placeholder-slate-600 font-bold"
+                  onKeyDown={(e) => e.key === 'Enter' && name && onStart(name)}
+                />
+                <button 
+                  onClick={() => name && onStart(name)}
+                  disabled={!name}
+                  className="w-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-4 rounded-lg transition-all shadow-lg transform hover:scale-[1.02] active:scale-[0.98]"
+                >
+                  開始冒險
+                </button>
+              </div>
+            </div>
+          );
+        }
 
-export default Game;
+        function ClassSelectScreen({ onSelect }) {
+          return (
+            <div className="animate-fade-in w-full max-w-5xl mx-auto">
+              <h2 className="text-4xl font-bold text-center mb-4 text-white">選擇你的專屬職業</h2>
+              <p className="text-center text-slate-400 mb-12 text-lg">不同的職業對應不同的「電的效應」，決定了你的武器屬性。</p>
+              
+              <div className="grid md:grid-cols-3 gap-8">
+                {CLASSES.map((c) => (
+                  <button 
+                    key={c.id}
+                    onClick={() => onSelect(c.id)}
+                    className={`group relative rounded-3xl border-2 overflow-hidden transition-all text-left flex flex-col ${c.bg} ${c.borderColor} hover:scale-105 hover:shadow-[0_0_40px_rgba(0,0,0,0.5)]`}
+                  >
+                    <div className="h-48 bg-slate-900/50 flex items-center justify-center relative overflow-hidden">
+                       <div className={`absolute inset-0 opacity-20 bg-${c.activeColor}-500 mix-blend-overlay`}></div>
+                       <div className="w-32 h-32 transform group-hover:scale-110 transition-transform duration-500">
+                         <c.Avatar />
+                       </div>
+                    </div>
+
+                    <div className="p-6 flex flex-col flex-grow">
+                      <h3 className={`text-3xl font-black ${c.color} mb-2`}>{c.name}</h3>
+                      <div className="text-xs font-mono px-2 py-1 bg-black/40 rounded w-fit text-slate-300 mb-3 border border-white/10">專精: {c.roleType === 'Magnetic' ? '磁效應' : c.roleType === 'Thermal' ? '熱效應' : '光效應'}</div>
+                      <p className="text-slate-300 leading-relaxed font-medium mb-4">{c.desc}</p>
+                      
+                      <div className="mt-auto pt-4 border-t border-white/10 flex justify-between items-center text-sm font-mono text-slate-400">
+                        <span>專屬武器</span>
+                        <span className={c.color}>{c.weaponName}</span>
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          );
+        }
+
+        // --- Level 1 Logic ---
+
+        function Level1_Main({ playerClass, getQuestions, onReset, onComplete }) {
+          const [phase, setPhase] = useState('quiz'); 
+          
+          if (phase === 'quiz') {
+            return (
+              <Level1_Quiz 
+                getQuestions={getQuestions} 
+                onQuizPass={() => setPhase('treasure')} 
+                onQuizFail={onReset}
+              />
+            );
+          } else {
+            return <Level1_Treasure playerClass={playerClass} onComplete={onComplete} />;
+          }
+        }
+
+        function Level1_Quiz({ getQuestions, onQuizPass, onQuizFail }) {
+          const [qIndex, setQIndex] = useState(0);
+          const [showFeedback, setShowFeedback] = useState(false);
+          const [isCorrect, setIsCorrect] = useState(false);
+          const [score, setScore] = useState(0);
+          const [quizQuestions, setQuizQuestions] = useState([]);
+          const [isFinished, setIsFinished] = useState(false);
+
+          useEffect(() => {
+            setQuizQuestions(getQuestions(4));
+          }, [getQuestions]);
+
+          const handleAnswer = (correct) => {
+            setIsCorrect(correct);
+            setShowFeedback(true);
+            if (correct) {
+              setScore(prev => prev + 1);
+            }
+          };
+
+          const nextQ = () => {
+            setShowFeedback(false);
+            if (qIndex < quizQuestions.length - 1) {
+              setQIndex(prev => prev + 1);
+            } else {
+              setIsFinished(true);
+            }
+          };
+
+          if (quizQuestions.length === 0) return <div className="text-center text-white mt-20 animate-pulse">正在載入安全協議...</div>;
+
+          if (isFinished) {
+            const passed = score >= 3;
+            return (
+              <div className="max-w-xl mx-auto w-full animate-fade-in text-center p-8 bg-slate-900 border-2 border-slate-700 rounded-2xl shadow-2xl">
+                <div className="mb-6">
+                  {passed ? <CheckCircle size={80} className="mx-auto text-green-500 mb-4 animate-bounce"/> : <Frown size={80} className="mx-auto text-red-500 mb-4 animate-pulse"/>}
+                  <h2 className={`text-3xl font-bold mb-2 ${passed ? 'text-green-400' : 'text-red-400'}`}>
+                    {passed ? "認證通過！" : "認證失敗..."}
+                  </h2>
+                  <p className="text-slate-300 text-lg">
+                    你的成績: <span className="font-mono text-2xl font-bold text-white">{score}/4</span>
+                  </p>
+                  {!passed && <p className="text-slate-400 mt-2 text-sm">需要答對 3 題或以上才能開啟寶庫。</p>}
+                </div>
+
+                {passed ? (
+                  <button onClick={onQuizPass} className="w-full bg-green-600 hover:bg-green-500 text-white font-bold py-4 rounded-xl text-xl shadow-lg transition-transform hover:scale-105">
+                    進入寶庫 <ArrowRight className="inline ml-2"/>
+                  </button>
+                ) : (
+                  <button onClick={onQuizFail} className="w-full bg-red-600 hover:bg-red-500 text-white font-bold py-4 rounded-xl text-xl shadow-lg transition-transform hover:scale-105">
+                    重新特訓 <RotateCcw className="inline ml-2"/>
+                  </button>
+                )}
+              </div>
+            );
+          }
+
+          return (
+            <div className="max-w-3xl mx-auto w-full animate-fade-in">
+              <div className="flex justify-between items-end mb-6">
+                <h2 className="text-3xl font-bold text-white flex items-center gap-3">
+                  <Terminal size={32} className="text-slate-400" /> 
+                  區域 1: 安全閘門認證
+                </h2>
+                <span className="font-mono text-slate-400 bg-slate-800 px-3 py-1 rounded-lg">Check {qIndex + 1}/{quizQuestions.length}</span>
+              </div>
+
+              <div className="bg-slate-900 border border-slate-700 rounded-2xl p-8 shadow-2xl min-h-[400px] flex flex-col justify-center relative">
+                <div className="absolute top-4 right-4 flex items-center gap-2 text-slate-500 font-mono text-sm">
+                   <Lock size={16} /> 需答對 3 題
+                </div>
+                
+                <h3 className="text-2xl font-bold mb-8 leading-relaxed text-slate-100">
+                  {quizQuestions[qIndex].q}
+                </h3>
+
+                {!showFeedback ? (
+                  <div className="space-y-4">
+                    <div className="grid gap-4">
+                      {quizQuestions[qIndex].options.map((opt, i) => (
+                        <button 
+                          key={i}
+                          onClick={() => handleAnswer(opt.correct)}
+                          className="group p-6 bg-slate-800 hover:bg-slate-700 border-2 border-slate-700 hover:border-blue-400 rounded-xl text-left transition-all hover:translate-x-2 flex items-center justify-between"
+                        >
+                          <div className="flex items-center gap-4">
+                            <span className="font-mono text-slate-500 group-hover:text-blue-400 transition-colors text-lg">0{i+1}</span>
+                            <span className="text-lg font-medium text-slate-200 group-hover:text-white">{opt.text}</span>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                    <TAS_Hint hintText={quizQuestions[qIndex].hint} />
+                  </div>
+                ) : (
+                  <div className={`p-6 rounded-xl border-2 text-center animate-in zoom-in-95 ${isCorrect ? 'bg-green-900/30 border-green-500' : 'bg-red-900/30 border-red-500'}`}>
+                    <div className="flex justify-center mb-4">
+                      {isCorrect ? <CheckCircle size={48} className="text-green-500" /> : <XCircle size={48} className="text-red-500" />}
+                    </div>
+                    <h4 className={`text-xl font-bold mb-2 ${isCorrect ? 'text-green-400' : 'text-red-400'}`}>
+                      {isCorrect ? "回答正確！" : "回答錯誤！"}
+                    </h4>
+                    <p className="text-slate-300 mb-6">{quizQuestions[qIndex].reason}</p>
+                    <button 
+                      onClick={nextQ}
+                      className="bg-slate-700 hover:bg-slate-600 text-white px-8 py-3 rounded-lg font-bold transition-all"
+                    >
+                      {qIndex < quizQuestions.length - 1 ? "下一題" : "查看結果"}
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        }
+
+        function Level1_Treasure({ playerClass, onComplete }) {
+          const [selectedTreasure, setSelectedTreasure] = useState(null);
+          const [errorMsg, setErrorMsg] = useState('');
+
+          const handleSelect = (treasure) => {
+            setSelectedTreasure(treasure);
+            setErrorMsg('');
+          };
+
+          const confirmSelection = () => {
+            if (!selectedTreasure) return;
+
+            if (selectedTreasure.type === playerClass.roleType) {
+              onComplete(selectedTreasure.name);
+            } else {
+              let correctEffect = playerClass.roleType === 'Magnetic' ? '磁效應' : playerClass.roleType === 'Thermal' ? '熱效應' : '光效應';
+              setErrorMsg(`警告：你的職業是【${playerClass.name}】，只能裝備【${correctEffect}】的寶物！`);
+            }
+          };
+
+          return (
+            <div className="max-w-5xl mx-auto w-full animate-fade-in text-center">
+              <div className="mb-8">
+                <Unlock size={48} className="mx-auto text-yellow-400 mb-4 animate-bounce" />
+                <h2 className="text-4xl font-bold text-white mb-2">寶庫已開啟！</h2>
+                <p className="text-slate-300 text-lg">
+                  請根據你的職業 <span className={`${playerClass.color} font-bold`}>{playerClass.name}</span>，<br/>
+                  選擇一件適合你的核心寶物帶往下一關。
+                </p>
+              </div>
+
+              <div className="grid md:grid-cols-3 gap-6 mb-8">
+                {TREASURES.map((t, i) => (
+                  <button
+                    key={i}
+                    onClick={() => handleSelect(t)}
+                    className={`relative p-8 rounded-2xl border-2 transition-all flex flex-col items-center gap-4 group ${
+                      selectedTreasure === t 
+                        ? `bg-slate-800 border-white shadow-[0_0_30px_rgba(255,255,255,0.2)] scale-105` 
+                        : 'bg-slate-900/50 border-slate-700 hover:border-slate-500 hover:bg-slate-800'
+                    }`}
+                  >
+                    <div className={`p-4 rounded-full bg-slate-950 shadow-inner group-hover:scale-110 transition-transform duration-300`}>
+                      {t.icon}
+                    </div>
+                    <h3 className="text-xl font-bold text-slate-200">{t.name}</h3>
+                    <p className="text-slate-400 text-sm">{t.desc}</p>
+                    {selectedTreasure === t && (
+                      <div className="absolute top-4 right-4 text-green-400">
+                        <CheckCircle size={24} />
+                      </div>
+                    )}
+                  </button>
+                ))}
+              </div>
+
+              {errorMsg && (
+                <div className="bg-red-900/50 border border-red-500 text-red-200 px-6 py-4 rounded-xl mb-6 inline-block animate-shake">
+                  <div className="flex items-center gap-2">
+                    <AlertTriangle size={20} />
+                    {errorMsg}
+                  </div>
+                </div>
+              )}
+
+              <button
+                onClick={confirmSelection}
+                disabled={!selectedTreasure}
+                className={`px-12 py-4 rounded-full font-black text-xl shadow-lg transition-all transform hover:scale-105 active:scale-95 flex items-center gap-2 mx-auto ${
+                  !selectedTreasure 
+                    ? 'bg-slate-700 text-slate-500 cursor-not-allowed' 
+                    : `${playerClass.btnBg} text-white`
+                }`}
+              >
+                確認領取 <ArrowRight size={24} />
+              </button>
+            </div>
+          );
+        }
+
+        // --- Level 2 Logic ---
+
+        function Level2_Upgrade_Challenge({ playerClass, getQuestions, inventory, onComplete }) {
+          const [stage, setStage] = useState(0); 
+          const [power, setPower] = useState(0);
+          const [perfectCount, setPerfectCount] = useState(0); 
+          const [modalOpen, setModalOpen] = useState(false);
+          const [currentQ, setCurrentQ] = useState(null);
+          const [feedback, setFeedback] = useState(null);
+
+          const upgradeSteps = [
+            { name: "安裝核心電源", gain: 50 },
+            { name: "強化能量傳輸", gain: 70 },
+            { name: "優化輸出功率", gain: 100 }
+          ];
+
+          const startUpgrade = () => {
+            const q = getQuestions(1)[0];
+            setCurrentQ(q);
+            setModalOpen(true);
+            setFeedback(null);
+          };
+
+          const handleAnswer = (correct) => {
+            const stepGain = upgradeSteps[stage].gain;
+            const actualGain = correct ? stepGain : 0; 
+            
+            if (correct) {
+              setPerfectCount(prev => prev + 1);
+            }
+
+            setFeedback({
+              correct,
+              msg: correct ? "升級成功！完美安裝！" : "安裝失敗...組件損壞，無法獲得能量。",
+              gain: actualGain
+            });
+
+            setTimeout(() => {
+              setPower(prev => prev + actualGain);
+              setModalOpen(false);
+              if (stage < 2) {
+                setStage(prev => prev + 1);
+              } else {
+                setStage(3); 
+              }
+            }, 2500);
+          };
+
+          return (
+            <div className="max-w-4xl mx-auto w-full animate-fade-in">
+              <div className="mb-8 text-center">
+                <h2 className="text-3xl font-bold text-white mb-2">區域 2: 武器研發室</h2>
+                <p className="text-slate-400 text-lg">
+                  正在使用 <span className="text-white font-mono bg-slate-800 px-2 rounded">{inventory[0]}</span> 強化武器。<br/>
+                  解決<span className="text-yellow-400">技術難題</span>以決定最終戰鬥力。<br/>
+                  <span className="text-red-400 text-sm">注意：答錯問題將導致該階段升級失敗 (0 加成)。</span>
+                </p>
+              </div>
+
+              <div className="flex flex-col md:flex-row gap-8 items-center justify-center">
+                
+                {/* Weapon Visual - Blueprint Card */}
+                <div className="relative w-80 h-96 bg-slate-900 rounded-3xl border-4 border-slate-700 overflow-hidden shadow-2xl group">
+                   {/* Grid Background */}
+                   <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-[size:20px_20px] opacity-20"></div>
+                   
+                   <div className="p-6 h-full flex flex-col">
+                     <div className="flex justify-between items-center mb-4 border-b border-slate-700 pb-2">
+                       <span className="text-xs font-mono text-slate-500">BLUEPRINT: {playerClass.weaponName}</span>
+                       <span className="text-xs font-mono text-yellow-500">MK-{stage+1}</span>
+                     </div>
+                     
+                     <div className="flex-grow flex items-center justify-center relative">
+                       <div className={`absolute inset-0 rounded-full blur-3xl opacity-20 ${playerClass.bg}`}></div>
+                       <div className={`w-40 h-40 transition-all duration-700 transform ${stage > 0 ? 'scale-110' : 'scale-100'} ${stage > 1 ? 'drop-shadow-[0_0_15px_rgba(255,255,255,0.5)]' : ''}`}>
+                          <playerClass.Weapon level={stage+1} />
+                       </div>
+                     </div>
+
+                     <div className="mt-auto">
+                       <div className="flex justify-between text-sm mb-1 text-slate-400">
+                         <span>Energy Output</span>
+                         <span className="text-white font-mono">{power} MW</span>
+                       </div>
+                       <div className="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
+                         <div className={`h-full ${playerClass.bg.replace('/80','')} transition-all duration-1000`} style={{width: `${(power/220)*100}%`}}></div>
+                       </div>
+                     </div>
+                   </div>
+                </div>
+
+                {/* Upgrade Steps */}
+                <div className="flex-1 space-y-4 w-full max-w-md">
+                  {stage < 3 ? (
+                     <div className="bg-slate-800 p-6 rounded-2xl border border-slate-600">
+                       <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                         <BrainCircuit className="text-cyan-400"/> 升級階段 {stage + 1}/3
+                       </h3>
+                       <p className="text-slate-300 mb-6">{upgradeSteps[stage].name}</p>
+                       <button 
+                         onClick={startUpgrade}
+                         className={`w-full py-4 rounded-xl font-bold text-lg text-white shadow-lg transition-transform hover:scale-105 active:scale-95 ${playerClass.btnBg}`}
+                       >
+                         開始升級程序
+                       </button>
+                     </div>
+                  ) : (
+                    <div className="bg-green-900/40 p-6 rounded-2xl border border-green-500 text-center animate-bounce-in">
+                       <h3 className="text-2xl font-bold text-green-400 mb-2">研發完成！</h3>
+                       <p className="text-slate-300 mb-6">最終戰鬥力: {power} (影響BOSS戰傷害)</p>
+                       <button 
+                         onClick={() => onComplete({ strength: power, level: 3, perfectCount: perfectCount })} 
+                         className="w-full py-4 rounded-xl font-bold text-lg bg-white text-slate-900 hover:bg-slate-200 shadow-lg"
+                       >
+                         前往戰場
+                       </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Challenge Modal */}
+              {modalOpen && currentQ && (
+                <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
+                  <div className="bg-slate-900 border-2 border-slate-600 rounded-2xl p-8 max-w-2xl w-full shadow-2xl animate-zoom-in">
+                     {!feedback ? (
+                       <>
+                         <h3 className="text-yellow-400 font-mono font-bold mb-6 flex items-center gap-2">
+                           <AlertTriangle size={20}/> 技術檢測中...
+                         </h3>
+                         <p className="text-xl font-bold text-white mb-8">{currentQ.q}</p>
+                         <div className="grid grid-cols-1 gap-4">
+                           {currentQ.options.map((opt, i) => (
+                             <button 
+                               key={i} 
+                               onClick={() => handleAnswer(opt.correct)}
+                               className="p-4 bg-slate-800 hover:bg-slate-700 border border-slate-600 hover:border-white rounded-xl text-left font-bold text-slate-200 transition-colors"
+                             >
+                               {opt.text}
+                             </button>
+                           ))}
+                         </div>
+                         <TAS_Hint hintText={currentQ.hint} />
+                       </>
+                     ) : (
+                       <div className="text-center py-8">
+                         {feedback.correct ? <CheckCircle size={60} className="mx-auto text-green-500 mb-4"/> : <XCircle size={60} className="mx-auto text-red-500 mb-4"/>}
+                         <h3 className={`text-2xl font-bold mb-2 ${feedback.correct ? 'text-green-400' : 'text-red-400'}`}>{feedback.msg}</h3>
+                         <p className="text-slate-400 font-mono text-xl">+ {feedback.gain} PWR</p>
+                         <div className="mt-4 text-sm text-slate-500">{currentQ.reason}</div>
+                       </div>
+                     )}
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        }
+
+        // --- Level 3: Boss Battle ---
+
+        function BossIntro({ playerClass, weaponStats, onStartBattle }) {
+          return (
+            <div className="text-center animate-pulse-slow max-w-lg mx-auto mt-16 p-8 relative">
+              <div className="absolute inset-0 bg-red-500/10 blur-3xl rounded-full"></div>
+              <div className="w-40 h-40 mx-auto mb-6 relative">
+                 <div className="absolute inset-0 bg-red-600 blur-xl rounded-full opacity-50"></div>
+                 <div className="w-full h-full rounded-full border-4 border-red-500 relative z-10 bg-slate-900 overflow-hidden">
+                   <AvatarBoss />
+                 </div>
+              </div>
+              
+              <h2 className="text-5xl font-black text-red-500 mb-4 tracking-tighter relative z-10">BOSS WARNING</h2>
+              <p className="text-2xl text-slate-200 mb-8 font-bold relative z-10">
+                <span className="text-red-400">短路博士</span> 正在吸收全城電力！
+              </p>
+              <div className="bg-slate-900/90 p-8 rounded-2xl border border-red-900/50 mb-10 backdrop-blur-md relative z-10 shadow-2xl">
+                <div className="flex items-center gap-4 mb-4 pb-4 border-b border-white/10">
+                  <div className="w-16 h-16 rounded-lg border-2 border-slate-600 bg-slate-800 overflow-hidden">
+                    <playerClass.Avatar />
+                  </div>
+                  <div className="text-left">
+                    <div className="text-xs text-slate-400">已裝備武器</div>
+                    <div className={`text-xl font-bold ${playerClass.color}`}>{playerClass.weaponName}</div>
+                  </div>
+                  <div className="ml-auto font-mono text-yellow-500 font-bold text-xl">PWR: {weaponStats.strength}</div>
+                </div>
+                <div className="flex items-center gap-3 bg-blue-900/30 p-4 rounded-xl border border-blue-500/50 mb-4 text-left">
+                   <Shield size={32} className="text-blue-400 flex-shrink-0" />
+                   <div>
+                     <div className="font-bold text-blue-300">戰術防禦系統</div>
+                     <div className="text-sm text-slate-400">你擁有一次性「手動防禦罩」。戰鬥中請點擊右上角按鈕，在關鍵時刻抵擋 Boss 的攻擊。</div>
+                   </div>
+                </div>
+                <div className="flex items-center gap-3 bg-cyan-900/30 p-4 rounded-xl border border-cyan-500/50 mb-4 text-left">
+                   <ZapOff size={32} className="text-cyan-400 flex-shrink-0" />
+                   <div>
+                     <div className="font-bold text-cyan-300">電磁脈衝 (EMP)</div>
+                     <div className="text-sm text-slate-400">可發射 EMP 癱瘓 Boss 一回合，使其無法攻擊。每場限用一次。</div>
+                   </div>
+                </div>
+                <p className="text-slate-300 text-sm">
+                  <span className="text-yellow-400">機率提示：</span>雙方都有 <span className="text-yellow-400">10%</span> 機率自動迴避攻擊。
+                </p>
+              </div>
+              <button 
+                onClick={onStartBattle} 
+                className="relative z-10 bg-red-600 hover:bg-red-500 text-white font-black py-4 px-16 rounded-full text-2xl shadow-[0_0_40px_rgba(220,38,38,0.6)] transition-all hover:scale-110 hover:-translate-y-1"
+              >
+                FIGHT
+              </button>
+            </div>
+          );
+        }
+
+        function BossBattle({ player, playerClass, weaponStats, getQuestions, onWin, onLose }) {
+          const [currentBoss, setCurrentBoss] = useState('normal'); // 'normal' | 'hidden'
+          const [bossHp, setBossHp] = useState(500); 
+          const [playerHp, setPlayerHp] = useState(player.maxHp);
+          const [combatLog, setCombatLog] = useState(['戰鬥開始！短路博士 釋放了高壓電場...']);
+          const [questionPhase, setQuestionPhase] = useState(true);
+          const [currentQ, setCurrentQ] = useState(null);
+          
+          // Tactical Skills
+          const [shield, setShield] = useState(1);
+          const [shieldPrimed, setShieldPrimed] = useState(false);
+          const [emp, setEmp] = useState(1);
+          const [empActive, setEmpActive] = useState(false); // If active, Boss skips next turn
+          
+          const [bossAttackCount, setBossAttackCount] = useState(0);
+          
+          // Ultimate Skill State
+          const [ultimateUsed, setUltimateUsed] = useState(false);
+          
+          // Visual Effects State
+          const [shake, setShake] = useState(false); 
+          const [flash, setFlash] = useState(false); 
+          const [floatingText, setFloatingText] = useState(null); 
+
+          useEffect(() => {
+            if (questionPhase) {
+              const qs = getQuestions(1);
+              if (qs.length > 0) {
+                setCurrentQ(qs[0]);
+              } else {
+                setCurrentQ({ q: "能量耗盡...最後一擊！電的單位是？", options: [{text:"Ampere", correct:true}, {text:"Liter", correct:false}, {text:"Kg", correct:false}], reason:"...", hint: "提示：電流的單位以 A 開頭。" });
+              }
+            }
+          }, [questionPhase, getQuestions]);
+
+          const activateShield = () => {
+            if (shield > 0) {
+              setShield(0);
+              setShieldPrimed(true);
+              setCombatLog(prev => [`[系統]: 防禦罩已啟動！準備抵擋下一次攻擊！`, ...prev]);
+            }
+          };
+
+          const useEmp = () => {
+            if (emp > 0) {
+              setEmp(0);
+              setEmpActive(true);
+              setCombatLog(prev => [`[系統]: 發射電磁脈衝 (EMP)！Boss 系統癱瘓，下回合無法攻擊！`, ...prev]);
+              showFloatingText("EMP!", "text-cyan-400 font-black");
+              // Immediately go to next question since boss is stunned
+              // But we need to wait a bit for effect
+              setTimeout(() => {
+                 setQuestionPhase(true); 
+              }, 1500);
+            }
+          };
+
+          const useUltimate = () => {
+            if (ultimateUsed) return;
+            setUltimateUsed(true);
+            setQuestionPhase(false); // Skip quiz phase for this turn
+
+            const dmg = 100;
+            triggerDamageEffect();
+            showFloatingText("ULTIMATE!", "text-purple-400 font-black text-5xl");
+            setTimeout(() => showFloatingText(`-${dmg}`, "text-yellow-400 text-4xl"), 800);
+
+            setCombatLog(prev => [`[你]: 發動必殺技【${playerClass.ultimateName}】！造成 ${dmg} 點真實傷害！`, ...prev]);
+            
+            setBossHp(h => {
+                const newHp = h - dmg;
+                if (newHp <= 0) handleBossDefeat(newHp);
+                return Math.max(0, newHp);
+            });
+
+            if (bossHp - dmg > 0) {
+                setTimeout(() => {
+                    setQuestionPhase(true); 
+                    setCombatLog(prev => [`[系統]: Boss 受到必殺技重創，暫時無法行動！`, ...prev]);
+                }, 2500);
+            }
+          };
+
+          const showFloatingText = (text, color) => {
+            setFloatingText({ text, color, id: Date.now() });
+            setTimeout(() => setFloatingText(null), 1000);
+          };
+
+          const triggerDamageEffect = () => {
+            setShake(true);
+            setFlash(true);
+            setTimeout(() => { setShake(false); setFlash(false); }, 300);
+          };
+
+          const handleBossDefeat = (hp) => {
+              if (hp <= 0) {
+                  if (currentBoss === 'normal' && weaponStats.perfectCount === 3) {
+                      // Transition to Hidden Boss
+                      setTimeout(() => {
+                          setCurrentBoss('hidden');
+                          setBossHp(1000);
+                          setBossAttackCount(0);
+                          setShield(1); // Reset Skills for part 2
+                          setEmp(1);
+                          setUltimateUsed(false); // Allow Ultimate only in part 2 if not used? Or reset it? 
+                          // Resetting ultimate for Part 2 is fair as it's a new boss
+                          
+                          setCombatLog(prev => [`⚠️ 警告：偵測到更強大的能量反應！`, `[超載大帝]: 凡人... 竟敢挑戰我！`, ...prev]);
+                          showFloatingText("WARNING!", "text-red-600 font-black text-5xl");
+                          setQuestionPhase(true); 
+                      }, 1500);
+                  } else {
+                      setTimeout(onWin, 1500);
+                  }
+              }
+          };
+
+          const bossTurn = () => {
+                if (bossHp <= 0) return;
+
+                // 0. Check EMP Stun
+                if (empActive) {
+                   setCombatLog(prev => [`[系統]: Boss 處於 EMP 癱瘓狀態，無法攻擊！`, ...prev]);
+                   showFloatingText("STUNNED", "text-cyan-400");
+                   setEmpActive(false); // Consumed
+                   setTimeout(() => setQuestionPhase(true), 2000);
+                   return;
+                }
+
+                // 1. Check Shield
+                if (shieldPrimed) {
+                   setCombatLog(prev => [`[系統]: 防禦罩發揮作用！完全抵擋了 Boss 的高壓電擊！`, ...prev]);
+                   setShieldPrimed(false); 
+                   showFloatingText("BLOCKED", "text-blue-400");
+                   setTimeout(() => setQuestionPhase(true), 2000);
+                   return;
+                }
+
+                // 2. Check Player Evasion (10%)
+                const playerEvade = Math.random() < 0.1;
+
+                if (playerEvade) {
+                   showFloatingText("迴避!", "text-green-400");
+                   setCombatLog(prev => [`[你]: 極限反應！成功迴避了 Boss 的攻擊！`, ...prev]);
+                   setTimeout(() => setQuestionPhase(true), 2000);
+                } else {
+                   // 3. Take Damage
+                   let bossDmg = 35;
+                   let attackMsg = "嘗嘗這個高壓電擊！";
+
+                   if (currentBoss === 'hidden') {
+                     const nextAttackCount = bossAttackCount + 1;
+                     setBossAttackCount(nextAttackCount);
+                     
+                     if (nextAttackCount % 4 === 0) {
+                       bossDmg = 50;
+                       attackMsg = "絕緣崩壞！虛空雷擊！";
+                       showFloatingText("ULTIMATE!", "text-purple-500 font-black");
+                     }
+                   }
+
+                   triggerDamageEffect();
+                   showFloatingText(`-${bossDmg}`, "text-red-500");
+                   setCombatLog(prev => [`[${currentBoss === 'hidden' ? '超載大帝' : '短路博士'}]: ${attackMsg} (-${bossDmg})`, ...prev]);
+                   setPlayerHp(h => {
+                     const newHp = h - bossDmg;
+                     if (newHp <= 0) setTimeout(onLose, 1500);
+                     return Math.max(0, newHp);
+                   });
+                   
+                   if (playerHp > 0) {
+                     setTimeout(() => setQuestionPhase(true), 2000);
+                   }
+                }
+          };
+
+          const handleAttack = (correct) => {
+            setQuestionPhase(false);
+            
+            if (correct) {
+              const bossEvade = Math.random() < 0.1;
+
+              if (bossEvade) {
+                showFloatingText("MISS", "text-slate-400");
+                setCombatLog(prev => [`[Boss]: 高速閃避！你的攻擊落空了！`, ...prev]);
+              } else {
+                const baseDmg = weaponStats.strength > 200 ? 40 : 20; 
+                const dmg = Math.floor(weaponStats.strength * 0.9) + baseDmg + Math.floor(Math.random() * 20);
+                
+                let attackDesc = "";
+                if (playerClass.id === 'engineer') attackDesc = `發射磁力砲！`;
+                if (playerClass.id === 'mage') attackDesc = `釋放離子流！`;
+                if (playerClass.id === 'warrior') attackDesc = `揮動雷射劍！`;
+
+                triggerDamageEffect();
+                showFloatingText(`-${dmg}`, "text-yellow-400");
+                setCombatLog(prev => [`[你]: ${attackDesc} (-${dmg})`, ...prev]);
+                setBossHp(h => {
+                  const newHp = h - dmg;
+                  if (newHp <= 0) handleBossDefeat(newHp);
+                  return Math.max(0, newHp);
+                });
+              }
+            } else {
+              setCombatLog(prev => [`[系統]: 知識連結失敗... 攻擊無效！`, ...prev]);
+            }
+
+            if (bossHp > 0) { // Simple check, exact handling in bossTurn
+              setTimeout(bossTurn, 1500);
+            }
+          };
+
+          const getBattleAdvice = () => {
+            if (playerHp < 70 && shield > 0 && !shieldPrimed) return "警報：生命值危急！建議立即啟動防禦罩！";
+            if (emp > 0 && currentBoss === 'hidden' && (bossAttackCount + 1) % 4 === 0) return "危險：Boss 即將發動大絕！建議使用 EMP 干擾！";
+            if (shieldPrimed) return "狀態：防禦罩運作中。請專注攻擊。";
+            if (empActive) return "狀態：Boss 已癱瘓。全力輸出！";
+            return "建議：觀察 Boss 攻擊頻率，保留技能以備不時之需。";
+          };
+
+          return (
+            <div className={`max-w-5xl mx-auto w-full animate-fade-in p-4 ${shake ? 'animate-shake' : ''}`}>
+              {/* Damage Flash Overlay */}
+              {flash && <div className="absolute inset-0 bg-red-500/20 z-50 pointer-events-none animate-ping"></div>}
+
+              <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-8 relative">
+                {/* Player */}
+                <div className="text-center relative z-10 order-2 md:order-1 group">
+                  <div className="relative inline-block">
+                     <div className={`w-32 h-32 rounded-full border-4 ${playerClass.borderColor} flex items-center justify-center mb-4 mx-auto shadow-lg transform hover:scale-105 transition-transform overflow-hidden bg-slate-900`}>
+                       <playerClass.Avatar />
+                     </div>
+                     {shieldPrimed && (
+                       <div className="absolute -inset-2 border-4 border-blue-400 rounded-full animate-pulse opacity-50"></div>
+                     )}
+                     {shieldPrimed && (
+                        <div className="absolute -top-2 -right-2 bg-blue-500 rounded-full p-2 shadow-lg z-20">
+                          <Shield size={20} className="text-white fill-blue-500" />
+                        </div>
+                     )}
+                     {/* Floating Text Player */}
+                     {floatingText && floatingText.color.includes('green') && (
+                       <div className={`absolute top-0 left-1/2 -translate-x-1/2 -translate-y-10 text-3xl font-black ${floatingText.color} animate-bounce z-50 drop-shadow-lg`}>
+                         {floatingText.text}
+                       </div>
+                     )}
+                     {floatingText && floatingText.color.includes('red') && (
+                       <div className={`absolute top-0 left-1/2 -translate-x-1/2 -translate-y-10 text-4xl font-black ${floatingText.color} animate-ping z-50 drop-shadow-lg`}>
+                         {floatingText.text}
+                       </div>
+                     )}
+                     {floatingText && floatingText.color.includes('blue') && (
+                       <div className={`absolute top-0 left-1/2 -translate-x-1/2 -translate-y-10 text-2xl font-black ${floatingText.color} animate-pulse z-50 drop-shadow-lg`}>
+                         {floatingText.text}
+                       </div>
+                     )}
+                  </div>
+                  <div className="bg-slate-800 rounded-full h-6 w-40 mx-auto overflow-hidden border border-slate-600 relative">
+                     <div className="absolute inset-0 flex items-center justify-center text-[10px] font-bold z-10 text-white">{playerHp}/{player.maxHp}</div>
+                    <div className={`h-full transition-all duration-500 ${playerHp < 50 ? 'bg-red-500 animate-pulse' : 'bg-green-500'}`} style={{width: `${(playerHp/player.maxHp)*100}%`}}></div>
+                  </div>
+                  <p className={`font-bold mt-2 text-xl ${playerClass.color}`}>{player.name}</p>
+                </div>
+
+                <div className="order-1 md:order-2 text-7xl font-black text-slate-800 italic opacity-50 select-none animate-pulse">VS</div>
+
+                {/* Boss */}
+                <div className="text-center relative z-10 order-3">
+                  <div className={`w-32 h-32 rounded-full border-4 ${currentBoss === 'hidden' ? 'border-purple-500 shadow-[0_0_30px_rgba(168,85,247,0.5)]' : 'border-red-500'} flex items-center justify-center mb-4 mx-auto shadow-lg animate-bounce-slow overflow-hidden bg-slate-900`}>
+                    {currentBoss === 'hidden' ? <AvatarUltimateBoss /> : <AvatarBoss />}
+                  </div>
+                  {/* Floating Text Boss */}
+                  {floatingText && floatingText.color.includes('yellow') && (
+                       <div className={`absolute top-0 left-1/2 -translate-x-1/2 -translate-y-10 text-4xl font-black ${floatingText.color} animate-ping z-50 drop-shadow-lg`}>
+                         {floatingText.text}
+                       </div>
+                  )}
+                  {floatingText && floatingText.color.includes('purple') && (
+                       <div className={`absolute top-0 left-1/2 -translate-x-1/2 -translate-y-10 text-4xl font-black ${floatingText.color} animate-ping z-50 drop-shadow-lg`}>
+                         {floatingText.text}
+                       </div>
+                  )}
+                  {floatingText && floatingText.color.includes('slate') && (
+                       <div className={`absolute top-0 left-1/2 -translate-x-1/2 -translate-y-10 text-3xl font-black ${floatingText.color} animate-bounce z-50 drop-shadow-lg`}>
+                         {floatingText.text}
+                       </div>
+                  )}
+                  {floatingText && floatingText.color.includes('cyan') && (
+                       <div className={`absolute top-0 left-1/2 -translate-x-1/2 -translate-y-10 text-3xl font-black ${floatingText.color} animate-shake z-50 drop-shadow-lg`}>
+                         {floatingText.text}
+                       </div>
+                  )}
+
+                  <div className="bg-slate-800 rounded-full h-6 w-40 mx-auto overflow-hidden border border-slate-600 relative">
+                     <div className="absolute inset-0 flex items-center justify-center text-[10px] font-bold z-10 text-white">{bossHp}</div>
+                    <div className={`h-full transition-all duration-500 ${currentBoss === 'hidden' ? 'bg-purple-600' : 'bg-red-600'}`} style={{width: `${(bossHp/(currentBoss === 'hidden' ? 1000 : 500))*100}%`}}></div>
+                  </div>
+                  <p className={`font-bold mt-2 text-xl ${currentBoss === 'hidden' ? 'text-purple-400' : 'text-red-400'}`}>
+                    {currentBoss === 'hidden' ? '超載大帝' : '短路博士'}
+                  </p>
+                </div>
+              </div>
+
+              <div className="bg-slate-900 border-t-4 border-slate-700 rounded-2xl shadow-2xl min-h-[300px] flex flex-col relative overflow-hidden">
+                <div className={`absolute top-0 left-0 w-full h-1 ${playerClass.bg.replace('/80', '')}`}></div>
+
+                {questionPhase && currentQ ? (
+                  <div className="flex-grow flex flex-col items-center justify-center p-8 space-y-8 animate-in slide-in-from-bottom-10 fade-in duration-300 relative w-full">
+                    
+                    {/* Manual Skills Buttons */}
+                    <div className="absolute top-4 right-4 flex gap-2">
+                        {emp > 0 && !empActive && (
+                            <button 
+                              onClick={useEmp}
+                              className="bg-cyan-600 hover:bg-cyan-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 shadow-lg animate-bounce border border-cyan-400 transition-all hover:scale-105"
+                              title="癱瘓 Boss 一回合"
+                            >
+                              <ZapOff size={20} /> EMP (1/1)
+                            </button>
+                        )}
+                        {shield > 0 && !shieldPrimed && (
+                            <button 
+                              onClick={activateShield}
+                              className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 shadow-lg animate-bounce border border-blue-400 transition-all hover:scale-105"
+                              title="抵擋一次傷害"
+                            >
+                              <Shield size={20} /> 防禦 (1/1)
+                            </button>
+                        )}
+                    </div>
+
+                    {/* Status Indicators */}
+                    <div className="absolute top-4 right-4 flex gap-2 pointer-events-none">
+                        {empActive && (
+                             <div className="bg-cyan-900/80 border border-cyan-400 text-cyan-200 px-4 py-2 rounded-lg flex items-center gap-2 backdrop-blur-sm">
+                                <ZapOff size={20} /> Boss 癱瘓中
+                            </div>
+                        )}
+                        {shieldPrimed && (
+                             <div className="bg-blue-900/80 border border-blue-400 text-blue-200 px-4 py-2 rounded-lg flex items-center gap-2 backdrop-blur-sm">
+                                <Shield size={20} /> 防禦罩待命
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Ultimate Skill Button - Only for Hidden Boss */}
+                    {currentBoss === 'hidden' && !ultimateUsed && (
+                        <button 
+                          onClick={useUltimate}
+                          className="absolute top-4 left-4 bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-500 hover:to-orange-500 text-white px-6 py-3 rounded-xl flex items-center gap-2 shadow-[0_0_20px_rgba(234,179,8,0.5)] animate-pulse font-bold text-lg border-2 border-yellow-300 z-10"
+                        >
+                          <Star size={24} className="fill-yellow-200" /> 
+                          必殺技：{playerClass.ultimateName}
+                        </button>
+                    )}
+
+                    {/* AI Battle Analysis Bar */}
+                    <div className="w-full max-w-3xl bg-slate-800/50 border border-slate-600 rounded-lg p-2 flex items-center gap-2 text-xs md:text-sm text-slate-300 mt-12 md:mt-0">
+                       <Activity size={16} className="text-green-400 animate-pulse" />
+                       <span className="font-mono text-green-400 font-bold">T.A.S.</span>
+                       <span>{getBattleAdvice()}</span>
+                    </div>
+
+                    <div className="text-yellow-400 font-bold font-mono tracking-widest text-sm bg-yellow-900/20 px-4 py-1 rounded-full border border-yellow-500/30">
+                      武器充能程序啟動
+                    </div>
+                    <h3 className="text-2xl md:text-3xl font-bold text-center text-slate-100">{currentQ.q}</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-3xl">
+                      {currentQ.options.map((opt, idx) => (
+                        <button 
+                          key={idx}
+                          onClick={() => handleAttack(opt.correct)}
+                          className="bg-slate-800 hover:bg-slate-700 border-2 border-slate-700 hover:border-white p-6 rounded-xl text-lg font-bold transition-all hover:-translate-y-1 hover:shadow-lg text-slate-200"
+                        >
+                          {opt.text}
+                        </button>
+                      ))}
+                    </div>
+                    {/* Hint in Battle */}
+                    <TAS_Hint hintText={currentQ.hint} />
+                  </div>
+                ) : (
+                  <div className="flex-grow font-mono text-sm md:text-base space-y-3 p-6 h-64 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent">
+                    {combatLog.map((log, i) => (
+                      <div key={i} className={`p-3 rounded-lg border-l-4 animate-in fade-in slide-in-from-left-2 ${log.includes('[你]') ? 'border-green-500 bg-green-900/20' : log.includes('大帝') || log.includes('博士') ? 'border-red-500 bg-red-900/20' : log.includes('[系統]') ? 'border-blue-500 bg-blue-900/20' : log.includes('閃避') ? 'border-slate-500 bg-slate-800/80 text-slate-300' : 'border-slate-500 bg-slate-800/50'}`}>
+                        {log}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        }
+
+        // --- Main App ---
+        const Game = () => {
+            const [gameState, setGameState] = useState('start'); 
+            const [player, setPlayer] = useState({ name: '', classId: null, hp: 200, maxHp: 200 });
+            const [inventory, setInventory] = useState([]); 
+            const [weaponStats, setWeaponStats] = useState({ strength: 0, level: 1, perfectCount: 0 });
+            const usedQuestionIds = useRef(new Set());
+
+            const currentPlayerClass = CLASSES.find(c => c.id === player.classId) || CLASSES[0];
+
+            const startGame = (name) => {
+                setPlayer(p => ({ ...p, name }));
+                setGameState('class_select');
+            };
+
+            const selectClass = (classId) => {
+                setPlayer(p => ({ ...p, classId }));
+                setGameState('level1');
+            };
+
+            const resetGame = () => {
+                setGameState('start');
+                setPlayer({ name: '', classId: null, hp: 200, maxHp: 200 });
+                setInventory([]);
+                setWeaponStats({ strength: 0, level: 1, perfectCount: 0 });
+                usedQuestionIds.current = new Set(); 
+            };
+
+            const getUniqueQuestions = useCallback((count) => {
+                const used = usedQuestionIds.current;
+                const available = MASTER_QUESTION_POOL.filter(q => !used.has(q.id));
+                let source = available;
+                if (available.length < count) {
+                    source = MASTER_QUESTION_POOL; 
+                    usedQuestionIds.current = new Set();
+                }
+                const shuffled = [...source].sort(() => 0.5 - Math.random());
+                const selected = shuffled.slice(0, count);
+                selected.forEach(q => usedQuestionIds.current.add(q.id));
+                return selected;
+            }, []);
+
+            return (
+                <div className="min-h-screen bg-slate-950 text-cyan-50 font-sans selection:bg-cyan-500 selection:text-black overflow-hidden relative">
+                    <div className="absolute inset-0 bg-[linear-gradient(to_right,#0f172a_1px,transparent_1px),linear-gradient(to_bottom,#0f172a_1px,transparent_1px)] bg-[size:4rem_4rem] pointer-events-none opacity-50"></div>
+                    <div className="max-w-4xl mx-auto p-4 min-h-screen flex flex-col relative z-10">
+                        {/* HUD */}
+                        {gameState !== 'start' && gameState !== 'class_select' && (
+                            <header className="flex flex-wrap justify-between items-center py-4 mb-6 bg-slate-900/80 backdrop-blur-md rounded-xl px-6 border-b border-white/10 shadow-lg transition-all duration-500">
+                                <div className="flex items-center gap-4">
+                                    <div className={`w-14 h-14 rounded-full border-2 ${currentPlayerClass.borderColor} overflow-hidden bg-slate-900 shadow-[0_0_15px_rgba(0,0,0,0.5)]`}>
+                                        <currentPlayerClass.Avatar />
+                                    </div>
+                                    <div>
+                                        <div className={`font-bold text-xl leading-none ${currentPlayerClass.color}`}>{player.name}</div>
+                                        <div className="text-sm text-slate-400 flex items-center gap-1 mt-1">
+                                            {currentPlayerClass.icon} {currentPlayerClass.name}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="flex gap-4 items-center">
+                                    {weaponStats.strength > 0 && (
+                                        <div className="flex items-center gap-2 text-yellow-500 px-4 py-2 bg-yellow-900/20 border border-yellow-700/50 rounded-full font-mono font-bold animate-pulse">
+                                            <Crosshair size={18} />
+                                            <span>戰力: {weaponStats.strength}</span>
+                                        </div>
+                                    )}
+                                    <div className="flex items-center gap-2 px-4 py-2 bg-cyan-900/20 border border-cyan-700/50 rounded-full">
+                                        <Package size={18} className="text-cyan-400" />
+                                        <span className="font-mono">{inventory.length} 道具</span>
+                                    </div>
+                                </div>
+                            </header>
+                        )}
+
+                        <main className="flex-grow flex flex-col justify-center">
+                            {gameState === 'start' && <StartScreen onStart={startGame} />}
+                            {gameState === 'class_select' && <ClassSelectScreen onSelect={selectClass} />}
+                            {gameState === 'level1' && (
+                                <Level1_Main 
+                                    playerClass={currentPlayerClass} 
+                                    getQuestions={getUniqueQuestions}
+                                    onReset={resetGame}
+                                    onComplete={(item) => {
+                                        setInventory([item]);
+                                        setGameState('level2');
+                                    }} 
+                                />
+                            )}
+                            {gameState === 'level2' && (
+                                <Level2_Upgrade_Challenge 
+                                    playerClass={currentPlayerClass}
+                                    getQuestions={getUniqueQuestions}
+                                    inventory={inventory}
+                                    onComplete={(stats) => {
+                                        setWeaponStats(stats);
+                                        setGameState('boss_intro');
+                                    }}
+                                />
+                            )}
+                            {gameState === 'boss_intro' && (
+                                <BossIntro 
+                                    playerClass={currentPlayerClass}
+                                    weaponStats={weaponStats}
+                                    onStartBattle={() => setGameState('boss_battle')} 
+                                />
+                            )}
+                            {gameState === 'boss_battle' && (
+                                <BossBattle 
+                                    player={player}
+                                    playerClass={currentPlayerClass}
+                                    weaponStats={weaponStats}
+                                    getQuestions={getUniqueQuestions}
+                                    onWin={() => setGameState('victory')} 
+                                    onLose={resetGame} 
+                                />
+                            )}
+                            {gameState === 'victory' && (
+                                <VictoryScreen 
+                                    player={player} 
+                                    playerClass={currentPlayerClass}
+                                    weaponStats={weaponStats}
+                                    onReset={resetGame} 
+                                />
+                            )}
+                        </main>
+                    </div>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<Game />);
+    </script>
+</body>
+</html>
