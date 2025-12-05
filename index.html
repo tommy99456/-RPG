@@ -36,27 +36,23 @@
     <script type="text/babel">
         const { useState, useEffect, useRef, useCallback } = React;
 
-        // --- 核心修復：安全的 Icon Wrapper ---
+        // --- Icon Wrapper ---
         const IconWrapper = ({ name, size = 24, className }) => {
             const ref = useRef(null);
-
             useEffect(() => {
                 if (ref.current && window.lucide && window.lucide.icons[name]) {
                     ref.current.innerHTML = '';
                     const svg = window.lucide.createElement(window.lucide.icons[name]);
                     svg.setAttribute('width', size);
                     svg.setAttribute('height', size);
-                    if (className) {
-                        svg.setAttribute('class', className);
-                    }
+                    if (className) svg.setAttribute('class', className);
                     ref.current.appendChild(svg);
                 }
             }, [name, size, className]);
-
             return <span ref={ref} style={{ display: 'inline-flex', verticalAlign: 'middle' }} />;
         };
 
-        // --- 定義所有用到的圖示 ---
+        // --- Icons ---
         const Zap = (p) => <IconWrapper name="zap" {...p} />;
         const Shield = (p) => <IconWrapper name="shield" {...p} />;
         const Settings = (p) => <IconWrapper name="settings" {...p} />;
@@ -87,14 +83,13 @@
         const Battery = (p) => <IconWrapper name="battery" {...p} />;
         const Cpu = (p) => <IconWrapper name="cpu" {...p} />;
 
-        // --- 🎨 像素風 SVG 圖像資源 ---
+        // --- 🎨 Pixel Art SVGs ---
         const PixelSvg = ({ children, className }) => (
           <svg viewBox="0 0 24 24" className={`w-full h-full ${className}`} shapeRendering="crispEdges">
             {children}
           </svg>
         );
 
-        // 寶物圖示
         const PixelTreasureMagnet = () => (
             <PixelSvg>
                 <path d="M4 8 L4 16 A 8 8 0 0 0 20 16 L 20 8 L 16 8 L 16 16 A 4 4 0 0 1 8 16 L 8 8 Z" fill="#06b6d4" />
@@ -225,6 +220,9 @@
             Weapon: WeaponRailgun,
             weaponName: '超電磁加農砲',
             ultimateName: '量子軌道轟炸', 
+            skillName: '電磁脈衝 (EMP)',
+            skillDesc: '癱瘓 Boss 一回合',
+            skillIcon: <ZapOff size={20} />,
             desc: '操控「磁效應」的大師。利用線圈和鐵芯，產生強大的磁力衝擊。',
             color: 'text-cyan-400',
             borderColor: 'border-cyan-500',
@@ -242,6 +240,9 @@
             Weapon: WeaponStaff,
             weaponName: '高熱離子法杖',
             ultimateName: '末日高熱雷劫',
+            skillName: '狂熱模式',
+            skillDesc: '下回合傷害 +120', 
+            skillIcon: <Flame size={20} />,
             desc: '精通「熱效應」的奧秘。利用高電阻發熱線，釋放灼熱的能量。',
             color: 'text-orange-400',
             borderColor: 'border-orange-500',
@@ -259,6 +260,9 @@
             Weapon: WeaponSaber,
             weaponName: '光子雷射劍',
             ultimateName: '超光子爆裂斬',
+            skillName: '光能修復',
+            skillDesc: '回復 30 HP',
+            skillIcon: <HeartPulse size={20} />,
             desc: '駕馭「光效應」的力量。利用 LED 晶體匯聚光束，斬斷黑暗。',
             color: 'text-yellow-400',
             borderColor: 'border-yellow-500',
@@ -270,14 +274,12 @@
           }
         ];
 
-        // 使用新的 Pixel SVG 作為寶物圖示
         const TREASURES = [
           { type: 'Magnetic', name: '超導線圈組件', desc: '蘊含強大磁場潛力的精密線圈。', icon: <PixelTreasureMagnet /> },
           { type: 'Thermal', name: '高阻發熱核心', desc: '能瞬間產生極高溫度的核心材料。', icon: <PixelTreasureFire /> },
           { type: 'Luminous', name: '光子聚合晶體', desc: '能夠將電能高效率轉化為純淨光束。', icon: <PixelTreasureLight /> }
         ];
 
-        // --- 題庫 (擴充至 30 題) ---
         const MASTER_QUESTION_POOL = [
           { id: 1, q: "電飯煲主要利用電流的什麼效應來煮飯？", options: [{ text: "熱效應", correct: true }, { text: "磁效應", correct: false }, { text: "光效應", correct: false }], reason: "電飯煲內的發熱線會產生熱能煮食。", hint: "分析：電飯煲的目的是「煮熟」食物，這需要高溫。" },
           { id: 2, q: "廢鐵處理場的起重機利用什麼來吸起廢鐵？", options: [{ text: "巨大的磁石", correct: false }, { text: "電磁鐵", correct: true }, { text: "吸塵機", correct: false }], reason: "電磁鐵通電有磁，斷電無磁，方便控制。", hint: "分析：起重機需要「吸起」也要能隨時「放下」廢鐵。" },
@@ -312,7 +314,7 @@
           { id: 30, q: "手濕時拔插頭可能會導致什麼後果？", options: [{ text: "插頭變乾", correct: false }, { text: "觸電", correct: true }, { text: "停電", correct: false }], reason: "水降低了皮膚的電阻，極易觸電。", hint: "安全警告：水和電是危險的組合。" }
         ];
 
-        // --- 內建 AI 提示組件 ---
+        // --- TAS Hint Component ---
         function TAS_Hint({ hintText }) {
           const [show, setShow] = useState(false);
           const [loading, setLoading] = useState(false);
@@ -356,7 +358,6 @@
         }
 
         // --- Screens ---
-
         function StartScreen({ onStart }) {
           const [name, setName] = useState('');
           
@@ -425,6 +426,12 @@
                       <h3 className={`text-3xl font-black ${c.color} mb-2`}>{c.name}</h3>
                       <div className="text-xs font-mono px-2 py-1 bg-black/40 rounded w-fit text-slate-300 mb-3 border border-white/10">專精: {c.roleType === 'Magnetic' ? '磁效應' : c.roleType === 'Thermal' ? '熱效應' : '光效應'}</div>
                       <p className="text-slate-300 leading-relaxed font-medium mb-4">{c.desc}</p>
+
+                      {/* 新增：顯示專屬技能說明 */}
+                      <div className="mb-4 bg-slate-800/50 p-2 rounded-lg border border-slate-700/50">
+                        <div className={`text-xs font-bold ${c.color} mb-1`}>專屬技能：{c.skillName}</div>
+                        <div className="text-xs text-slate-400">{c.skillDesc}</div>
+                      </div>
                       
                       <div className="mt-auto pt-4 border-t border-white/10 flex justify-between items-center text-sm font-mono text-slate-400">
                         <span>專屬武器</span>
@@ -841,20 +848,16 @@
                   </div>
                   <div className="ml-auto font-mono text-yellow-500 font-bold text-xl">PWR: {weaponStats.strength}</div>
                 </div>
-                <div className="flex items-center gap-3 bg-blue-900/30 p-4 rounded-xl border border-blue-500/50 mb-4 text-left">
-                   <Shield size={32} className="text-blue-400 flex-shrink-0" />
+                
+                {/* Class Skill Info */}
+                <div className={`flex items-center gap-3 p-4 rounded-xl border mb-4 text-left bg-slate-800/50 ${playerClass.borderColor}`}>
+                   <div className={`${playerClass.color}`}>{playerClass.skillIcon}</div>
                    <div>
-                     <div className="font-bold text-blue-300">戰術防禦系統</div>
-                     <div className="text-sm text-slate-400">你擁有一次性「手動防禦罩」。戰鬥中請點擊右上角按鈕，在關鍵時刻抵擋 Boss 的攻擊。</div>
+                     <div className={`font-bold ${playerClass.color}`}>專屬技能：{playerClass.skillName}</div>
+                     <div className="text-sm text-slate-400">{playerClass.skillDesc} (每階段限用一次)</div>
                    </div>
                 </div>
-                <div className="flex items-center gap-3 bg-cyan-900/30 p-4 rounded-xl border border-cyan-500/50 mb-4 text-left">
-                   <ZapOff size={32} className="text-cyan-400 flex-shrink-0" />
-                   <div>
-                     <div className="font-bold text-cyan-300">電磁脈衝 (EMP)</div>
-                     <div className="text-sm text-slate-400">可發射 EMP 癱瘓 Boss 一回合，使其無法攻擊。每場限用一次。</div>
-                   </div>
-                </div>
+                
                 <p className="text-slate-300 text-sm">
                   <span className="text-yellow-400">機率提示：</span>雙方都有 <span className="text-yellow-400">10%</span> 機率自動迴避攻擊。
                 </p>
@@ -877,11 +880,10 @@
           const [questionPhase, setQuestionPhase] = useState(true);
           const [currentQ, setCurrentQ] = useState(null);
           
-          // Tactical Skills
-          const [shield, setShield] = useState(1);
-          const [shieldPrimed, setShieldPrimed] = useState(false);
-          const [emp, setEmp] = useState(1);
-          const [empActive, setEmpActive] = useState(false); // If active, Boss skips next turn
+          // Class Specific Skills State
+          const [classSkillAvailable, setClassSkillAvailable] = useState(true); // Reset per boss phase
+          const [empActive, setEmpActive] = useState(false); // For Engineer
+          const [frenzyActive, setFrenzyActive] = useState(false); // For Mage
           
           const [bossAttackCount, setBossAttackCount] = useState(0);
           
@@ -904,26 +906,31 @@
             }
           }, [questionPhase, getQuestions]);
 
-          const activateShield = () => {
-            if (shield > 0) {
-              setShield(0);
-              setShieldPrimed(true);
-              setCombatLog(prev => [`[系統]: 防禦罩已啟動！準備抵擋下一次攻擊！`, ...prev]);
-            }
-          };
+          const handleClassSkill = () => {
+              if (!classSkillAvailable) return;
+              
+              setClassSkillAvailable(false); // Consume use
 
-          const useEmp = () => {
-            if (emp > 0) {
-              setEmp(0);
-              setEmpActive(true);
-              setCombatLog(prev => [`[系統]: 發射電磁脈衝 (EMP)！Boss 系統癱瘓，下回合無法攻擊！`, ...prev]);
-              showFloatingText("EMP!", "text-cyan-400 font-black");
-              // Immediately go to next question since boss is stunned
-              // But we need to wait a bit for effect
-              setTimeout(() => {
-                 setQuestionPhase(true); 
-              }, 1500);
-            }
+              if (playerClass.id === 'engineer') {
+                  setEmpActive(true);
+                  setCombatLog(prev => [`[系統]: 發射電磁脈衝 (EMP)！Boss 系統癱瘓，下回合無法攻擊！`, ...prev]);
+                  showFloatingText("EMP!", "text-cyan-400 font-black");
+                  // Skip directly to question phase after delay
+                  setTimeout(() => {
+                     setQuestionPhase(true); 
+                  }, 1500);
+              } 
+              else if (playerClass.id === 'mage') {
+                  setFrenzyActive(true);
+                  setCombatLog(prev => [`[系統]: 狂熱模式啟動！下一次攻擊傷害大幅提升！`, ...prev]);
+                  showFloatingText("FRENZY!", "text-orange-500 font-black");
+              }
+              else if (playerClass.id === 'warrior') {
+                  const healAmount = 30;
+                  setPlayerHp(h => Math.min(player.maxHp, h + healAmount));
+                  setCombatLog(prev => [`[系統]: 光能修復！回復了 ${healAmount} 點生命值！`, ...prev]);
+                  showFloatingText("+30 HP", "text-green-400 font-black");
+              }
           };
 
           const useUltimate = () => {
@@ -931,7 +938,7 @@
             setUltimateUsed(true);
             setQuestionPhase(false); // Skip quiz phase for this turn
 
-            const dmg = 100;
+            const dmg = 500; // Updated damage to 500
             triggerDamageEffect();
             showFloatingText("ULTIMATE!", "text-purple-400 font-black text-5xl");
             setTimeout(() => showFloatingText(`-${dmg}`, "text-yellow-400 text-4xl"), 800);
@@ -969,12 +976,14 @@
                       // Transition to Hidden Boss
                       setTimeout(() => {
                           setCurrentBoss('hidden');
-                          setBossHp(1000);
+                          setBossHp(1300); // Updated Hidden Boss HP to 1300
                           setBossAttackCount(0);
-                          setShield(1); // Reset Skills for part 2
-                          setEmp(1);
-                          setUltimateUsed(false); // Allow Ultimate only in part 2 if not used? Or reset it? 
-                          // Resetting ultimate for Part 2 is fair as it's a new boss
+                          
+                          // Reset Skills for Phase 2
+                          setClassSkillAvailable(true);
+                          setEmpActive(false);
+                          setFrenzyActive(false);
+                          setUltimateUsed(false); 
                           
                           setCombatLog(prev => [`⚠️ 警告：偵測到更強大的能量反應！`, `[超載大帝]: 凡人... 竟敢挑戰我！`, ...prev]);
                           showFloatingText("WARNING!", "text-red-600 font-black text-5xl");
@@ -989,7 +998,7 @@
           const bossTurn = () => {
                 if (bossHp <= 0) return;
 
-                // 0. Check EMP Stun
+                // 0. Check EMP Stun (Engineer Skill)
                 if (empActive) {
                    setCombatLog(prev => [`[系統]: Boss 處於 EMP 癱瘓狀態，無法攻擊！`, ...prev]);
                    showFloatingText("STUNNED", "text-cyan-400");
@@ -998,16 +1007,7 @@
                    return;
                 }
 
-                // 1. Check Shield
-                if (shieldPrimed) {
-                   setCombatLog(prev => [`[系統]: 防禦罩發揮作用！完全抵擋了 Boss 的高壓電擊！`, ...prev]);
-                   setShieldPrimed(false); 
-                   showFloatingText("BLOCKED", "text-blue-400");
-                   setTimeout(() => setQuestionPhase(true), 2000);
-                   return;
-                }
-
-                // 2. Check Player Evasion (10%)
+                // 1. Check Player Evasion (10%)
                 const playerEvade = Math.random() < 0.1;
 
                 if (playerEvade) {
@@ -1015,7 +1015,7 @@
                    setCombatLog(prev => [`[你]: 極限反應！成功迴避了 Boss 的攻擊！`, ...prev]);
                    setTimeout(() => setQuestionPhase(true), 2000);
                 } else {
-                   // 3. Take Damage
+                   // 2. Take Damage
                    let bossDmg = 35;
                    let attackMsg = "嘗嘗這個高壓電擊！";
 
@@ -1056,7 +1056,14 @@
                 setCombatLog(prev => [`[Boss]: 高速閃避！你的攻擊落空了！`, ...prev]);
               } else {
                 const baseDmg = weaponStats.strength > 200 ? 40 : 20; 
-                const dmg = Math.floor(weaponStats.strength * 0.9) + baseDmg + Math.floor(Math.random() * 20);
+                let dmg = Math.floor(weaponStats.strength * 0.9) + baseDmg + Math.floor(Math.random() * 20);
+                
+                // Apply Mage Frenzy
+                if (frenzyActive) {
+                    dmg += 120; // Updated frenzy bonus to +120
+                    setFrenzyActive(false); 
+                    showFloatingText("CRITICAL!", "text-orange-500 font-black");
+                }
                 
                 let attackDesc = "";
                 if (playerClass.id === 'engineer') attackDesc = `發射磁力砲！`;
@@ -1076,17 +1083,16 @@
               setCombatLog(prev => [`[系統]: 知識連結失敗... 攻擊無效！`, ...prev]);
             }
 
-            if (bossHp > 0) { // Simple check, exact handling in bossTurn
+            if (bossHp > 0) { 
               setTimeout(bossTurn, 1500);
             }
           };
 
           const getBattleAdvice = () => {
-            if (playerHp < 70 && shield > 0 && !shieldPrimed) return "警報：生命值危急！建議立即啟動防禦罩！";
-            if (emp > 0 && currentBoss === 'hidden' && (bossAttackCount + 1) % 4 === 0) return "危險：Boss 即將發動大絕！建議使用 EMP 干擾！";
-            if (shieldPrimed) return "狀態：防禦罩運作中。請專注攻擊。";
-            if (empActive) return "狀態：Boss 已癱瘓。全力輸出！";
-            return "建議：觀察 Boss 攻擊頻率，保留技能以備不時之需。";
+            if (playerHp < 70 && classSkillAvailable && playerClass.id === 'warrior') return "建議：生命值低下，使用光能修復！";
+            if (classSkillAvailable && playerClass.id === 'mage') return "建議：開啟狂熱模式，最大化輸出！";
+            if (currentBoss === 'hidden' && (bossAttackCount + 1) % 4 === 0 && playerClass.id === 'engineer' && classSkillAvailable) return "危險：Boss 即將大絕！使用 EMP 阻止！";
+            return "建議：觀察戰況，謹慎答題。";
           };
 
           return (
@@ -1101,13 +1107,11 @@
                      <div className={`w-32 h-32 rounded-full border-4 ${playerClass.borderColor} flex items-center justify-center mb-4 mx-auto shadow-lg transform hover:scale-105 transition-transform overflow-hidden bg-slate-900`}>
                        <playerClass.Avatar />
                      </div>
-                     {shieldPrimed && (
-                       <div className="absolute -inset-2 border-4 border-blue-400 rounded-full animate-pulse opacity-50"></div>
-                     )}
-                     {shieldPrimed && (
-                        <div className="absolute -top-2 -right-2 bg-blue-500 rounded-full p-2 shadow-lg z-20">
-                          <Shield size={20} className="text-white fill-blue-500" />
-                        </div>
+                     {/* Visuals for active buffs */}
+                     {frenzyActive && (
+                         <div className="absolute -top-2 -right-2 bg-orange-500 rounded-full p-2 shadow-lg z-20 animate-bounce">
+                           <Flame size={20} className="text-white" />
+                         </div>
                      )}
                      {/* Floating Text Player */}
                      {floatingText && floatingText.color.includes('green') && (
@@ -1140,6 +1144,14 @@
                   <div className={`w-32 h-32 rounded-full border-4 ${currentBoss === 'hidden' ? 'border-purple-500 shadow-[0_0_30px_rgba(168,85,247,0.5)]' : 'border-red-500'} flex items-center justify-center mb-4 mx-auto shadow-lg animate-bounce-slow overflow-hidden bg-slate-900`}>
                     {currentBoss === 'hidden' ? <AvatarUltimateBoss /> : <AvatarBoss />}
                   </div>
+                  
+                  {/* EMP Status on Boss */}
+                  {empActive && (
+                     <div className="absolute -top-2 -right-2 bg-cyan-500 rounded-full p-2 shadow-lg z-20 animate-spin">
+                        <ZapOff size={20} className="text-white" />
+                     </div>
+                  )}
+
                   {/* Floating Text Boss */}
                   {floatingText && floatingText.color.includes('yellow') && (
                        <div className={`absolute top-0 left-1/2 -translate-x-1/2 -translate-y-10 text-4xl font-black ${floatingText.color} animate-ping z-50 drop-shadow-lg`}>
@@ -1161,10 +1173,15 @@
                          {floatingText.text}
                        </div>
                   )}
+                  {floatingText && floatingText.color.includes('orange') && (
+                       <div className={`absolute top-0 left-1/2 -translate-x-1/2 -translate-y-10 text-3xl font-black ${floatingText.color} animate-pulse z-50 drop-shadow-lg`}>
+                         {floatingText.text}
+                       </div>
+                  )}
 
                   <div className="bg-slate-800 rounded-full h-6 w-40 mx-auto overflow-hidden border border-slate-600 relative">
                      <div className="absolute inset-0 flex items-center justify-center text-[10px] font-bold z-10 text-white">{bossHp}</div>
-                    <div className={`h-full transition-all duration-500 ${currentBoss === 'hidden' ? 'bg-purple-600' : 'bg-red-600'}`} style={{width: `${(bossHp/(currentBoss === 'hidden' ? 1000 : 500))*100}%`}}></div>
+                    <div className={`h-full transition-all duration-500 ${currentBoss === 'hidden' ? 'bg-purple-600' : 'bg-red-600'}`} style={{width: `${(bossHp/(currentBoss === 'hidden' ? 1200 : 500))*100}%`}}></div>
                   </div>
                   <p className={`font-bold mt-2 text-xl ${currentBoss === 'hidden' ? 'text-purple-400' : 'text-red-400'}`}>
                     {currentBoss === 'hidden' ? '超載大帝' : '短路博士'}
@@ -1178,38 +1195,29 @@
                 {questionPhase && currentQ ? (
                   <div className="flex-grow flex flex-col items-center justify-center p-8 space-y-8 animate-in slide-in-from-bottom-10 fade-in duration-300 relative w-full">
                     
-                    {/* Manual Skills Buttons */}
-                    <div className="absolute top-4 right-4 flex gap-2">
-                        {emp > 0 && !empActive && (
+                    {/* Class Specific Skill Button */}
+                    <div className="absolute top-4 right-4">
+                        {classSkillAvailable && !empActive && (
                             <button 
-                              onClick={useEmp}
-                              className="bg-cyan-600 hover:bg-cyan-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 shadow-lg animate-bounce border border-cyan-400 transition-all hover:scale-105"
-                              title="癱瘓 Boss 一回合"
+                              onClick={handleClassSkill}
+                              className={`text-white px-4 py-2 rounded-lg flex items-center gap-2 shadow-lg animate-bounce border border-white/50 transition-all hover:scale-105 ${playerClass.btnBg}`}
+                              title={playerClass.skillDesc}
                             >
-                              <ZapOff size={20} /> EMP (1/1)
-                            </button>
-                        )}
-                        {shield > 0 && !shieldPrimed && (
-                            <button 
-                              onClick={activateShield}
-                              className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 shadow-lg animate-bounce border border-blue-400 transition-all hover:scale-105"
-                              title="抵擋一次傷害"
-                            >
-                              <Shield size={20} /> 防禦 (1/1)
+                              {playerClass.skillIcon} {playerClass.skillName} (1/1)
                             </button>
                         )}
                     </div>
 
                     {/* Status Indicators */}
-                    <div className="absolute top-4 right-4 flex gap-2 pointer-events-none">
+                    <div className="absolute top-4 right-4 flex gap-2 pointer-events-none" style={{top: '3.5rem'}}>
                         {empActive && (
                              <div className="bg-cyan-900/80 border border-cyan-400 text-cyan-200 px-4 py-2 rounded-lg flex items-center gap-2 backdrop-blur-sm">
                                 <ZapOff size={20} /> Boss 癱瘓中
                             </div>
                         )}
-                        {shieldPrimed && (
-                             <div className="bg-blue-900/80 border border-blue-400 text-blue-200 px-4 py-2 rounded-lg flex items-center gap-2 backdrop-blur-sm">
-                                <Shield size={20} /> 防禦罩待命
+                        {frenzyActive && (
+                             <div className="bg-orange-900/80 border border-orange-400 text-orange-200 px-4 py-2 rounded-lg flex items-center gap-2 backdrop-blur-sm">
+                                <Flame size={20} /> 狂熱模式
                             </div>
                         )}
                     </div>
